@@ -11,6 +11,6 @@
   "license": "ISC",
   "dependencies": {
     "discord.js": "^14.11.0",
-    "shoukaku": "^3.4.0"
+    "shoukaku": "github:Deivu/Shoukaku"
   }
 }

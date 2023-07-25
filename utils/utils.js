@@ -1,49 +1,32 @@
 const { Collection } = require("@discordjs/collection");
 
-class voiceQueue {
-    constructor(ram) {
-        this.ram = ram;
-        this.queue = {};
+class queue {
+    add(guildId) {
+        this[guildId] = new guildQueue(guildId);
+        return;
     }
-    createGuildQueue(id) {
-        const temp = {
-            [id]: {
-                "previousUser": "",
-                "previousChannel": "",
-                "stream": "",
-                "connection": "",
-                "title": "",
-                "artist": "",
-                "length": "",
-                "id": "",
-                "autoReplay": "false",
-                "player": "",
-                "channel": "",
-                "queue": [],
-                "resource": "",
-                "volume": "",
-                "index": 0,
-                "previousPanel": "",
-                "savedQueue": [],
-                "status": "",
-                "rawStream": "",
-                "seek": 0,
-                "seekStream": "",
-                "subSeekStream": "",
-                "seekStreamInt": 0,
-                "useYTM": true,
-                add(url) {
-                    this.queue.push(url);
-                },
-            }
+}
+
+class guildQueue {
+    constructor(id) {
+        this.id = id;
+    }
+    node = "";
+    player = "";
+    textChannel = "";
+    voiceChannel = "";
+    queue = [];
+    index = 0;
+    add(data, user) {
+        let temp = {
+            user: user,
+            data: data
         };
-        this.queue = { ...this.queue, ...temp };
+        this.queue.push(temp);
+        return;
     }
-    destroyAllQueue() {
-        this.queue = {};
-    }
-    add(guildId, url) {
-        
+    remove(url) {
+
     }
 }
 
@@ -123,4 +106,4 @@ function convertToJapanTime(unixTime) {
     const japanDate = new Date(japanTime);
     return japanDate.toString();
 }
-module.exports = { voiceQueue, reverseArray, shuffleArray, timeStringToSeconds, formatTime, array2Collection, cutString, convertToJapanTime };
+module.exports = { queue, reverseArray, shuffleArray, timeStringToSeconds, formatTime, array2Collection, cutString, convertToJapanTime };
