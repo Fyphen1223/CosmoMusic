@@ -17,6 +17,8 @@ class guildQueue {
     voiceChannel = "";
     queue = [];
     index = 0;
+    suppressEnd = false;
+    autoReplay = false;
     add(data, user) {
         let temp = {
             user: user,

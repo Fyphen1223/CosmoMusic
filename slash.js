@@ -40,16 +40,6 @@ const commands = [
 			subcommand.setName('shuffle')
 				.setDescription("Shuffle your queue"))
 		.addSubcommand(subcommand =>
-			subcommand.setName('add')
-				.setDescription('Add music to the queue')
-				.addStringOption(option =>
-					option.setName('url')
-						.setDescription('URL')
-						.setRequired(true)))
-		.addSubcommand(subcommand =>
-			subcommand.setName('addrelate')
-				.setDescription('Add related audio to the queue'))
-		.addSubcommand(subcommand =>
 			subcommand.setName('delete')
 				.setDescription('Delete music from the queue')
 				.addStringOption(option =>
