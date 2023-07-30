@@ -18,7 +18,8 @@ class guildQueue {
     queue = [];
     index = 0;
     suppressEnd = false;
-    autoReplay = false;
+    autoReplay = true;
+    volume = 100;
     add(data, user) {
         let temp = {
             user: user,
@@ -27,8 +28,9 @@ class guildQueue {
         this.queue.push(temp);
         return;
     }
-    remove(url) {
-
+    remove(index) {
+        this.queue.splice(index, 1);
+        return;
     }
 }
 

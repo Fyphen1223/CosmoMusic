@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Discord Bot Control Panel Login</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Gemunu+Libre:wght@200&display=swap" rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-image: linear-gradient(45deg, blue, red);
+            font-family: 'Gemunu Libre', sans-serif;
+            text-align: center;
+        }
+
+        .main {
+            background: whitesmoke;
+            border-radius: 50px;
+            box-shadow: 0px 0px 20px white;
+            width: 80%;
+            height: 90%;
+            padding: 40px;
+            text-align: center;
+            margin: 100px;
+        }
+
+        h1 {
+            font-size: 200px;
+            color: aquamarine;
+        }
+
+        input {
+            font-family: 'Gemunu Libre', sans-serif;
+            display: inline-block;
+            font-size: 30px;
+            text-align: center;
+            color: black;
+            border-image: linear-gradient(45deg, red, blue);
+            border-image-slice: 1;
+            margin: 20px;
+            width: 250px;
+            height: 40px;
+            background-color: #f5f5f5;
+        }
+
+        button {
+            font-family: 'Gemunu Libre', sans-serif;
+            width: 200px;
+            height: 100px;
+            font-size: 40px;
+            border-image: linear-gradient(45deg, red, blue);
+            border-image-slice: 1;
+            background: white;
+            transition: 1s;
+            margin: 40px;
+            cursor: pointer;
+            text-align: center;
+        }
+
+        button:hover {
+            font-family: 'Gemunu Libre', sans-serif;
+            width: 200px;
+            height: 100px;
+            font-size: 40px;
+            border-image: linear-gradient(45deg, red, blue);
+            border-image-slice: 1;
+            box-shadow: 0px 0px 20px blue;
+        }
+
+        .inp {
+            display: block;
+        }
+
+        h2 {
+            display: inline-block;
+        }
+
+        i {
+            margin: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="main">
+        <h1>Hello, User!</h1>
+        <form class="login" method="post">
+            <div class="inp">
+                <h2><i class="fa-regular fa-user"></i>Username:</h2><input type="text" name="username"
+                    placeholder="Username">
+            </div>
+            <div class="inp">
+                <h2><i class="fa-solid fa-key"></i>Password:</h2><input type="password" name="password"
+                    placeholder="Password">
+            </div>
+            <br>
+            <button type="submit"><i class="fa-solid fa-right-to-bracket" id="login"></i> Log in</button>
+            <br><a href="https://discord.com/api/oauth2/authorize?client_id=1019513478005919766&redirect_uri=https%3A%2F%2Fhacker-bot.ddns.net&response_type=code&scope=identify%20email">Log in via Discord</a>
+        </form>
+    </div>
+</body>
+<script src="https://kit.fontawesome.com/3c77f20f48.js" crossorigin="anonymous"></script>
+
+</html>

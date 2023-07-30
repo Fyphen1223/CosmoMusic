@@ -43,8 +43,8 @@ const commands = [
 			subcommand.setName('delete')
 				.setDescription('Delete music from the queue')
 				.addStringOption(option =>
-					option.setName('url')
-						.setDescription('URL')
+					option.setName('query')
+						.setDescription('Query')
 						.setRequired(true)
 						.setAutocomplete(true)))
 		.addSubcommand(subcommand =>

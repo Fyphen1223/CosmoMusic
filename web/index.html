@@ -1,0 +1,292 @@
+<!DOCTYPE HTML>
+<html lang="en">
+
+<head>
+	<meta charset="utf-8">
+	<meta name="description" contnent="Net Hackler Bot Control Panel">
+	<meta name="keyword" content="Net Hacker, Discord, Discord Bot">
+	<meta name="author" content="Fyphen">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Discord Bot Controll Panel</title>
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="icon" href="/icon">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link href="https://fonts.googleapis.com/css2?family=Gemunu+Libre:wght@200&display=swap" rel="stylesheet">
+	<style>
+		html {
+			font-family: 'Gemunu Libre', sans-serif;
+		}
+
+		input,
+		button {
+			font-family: 'Gemunu Libre', sans-serif;
+			font-size: 20px;
+		}
+
+		input {
+			border-image: linear-gradient(to right, #c21500 0%, #00aaff 100%);
+			border-image-slice: 1;
+			margin: 30px;
+			width: 200px;
+			height: 30px;
+		}
+
+		button {
+			border-image: linear-gradient(to right, #c21500 0%, #00aaff 100%);
+			border-image-slice: 1;
+			background: white;
+			color: black;
+			width: 150px;
+			height: 40px;
+			margin: 30px;
+			vertical-align: center;
+			transition: 0.2s;
+		}
+
+		button:hover {
+			border-image: linear-gradient(to right, #c21500 0%, #00aaff 100%);
+			border-image-slice: 1;
+			background: black;
+			color: white;
+			width: 150px;
+			height: 40px;
+			margin: 30px;
+		}
+
+		.grid {
+			border: 3px solid;
+			padding: 30px;
+			border-image: linear-gradient(to right, #c21500 0%, #00aaff 100%);
+			border-image-slice: 1;
+			margin: 30px;
+		}
+
+		select {
+			border-image: linear-gradient(to right, #c21500 0%, #00aaff 100%);
+			border-image-slice: 1;
+			background: white;
+			color: black;
+			width: 400px;
+			height: 40px;
+			margin: 30px;
+			transition: 0.2s;
+			font-family: 'Gemunu Libre', sans-serif;
+			font-size: 20px;
+			border-width: 2px;
+		}
+
+		select:hover {
+			border-image: linear-gradient(to right, #c21500 0%, #00aaff 100%);
+			border-image-slice: 1;
+			background: black;
+			color: white;
+			margin: 30px;
+		}
+	</style>
+</head>
+
+<body>
+	<div class="grid">
+		<h1><i class="fa-solid fa-signal"></i> BOT Status</h1>
+		<span>Ping:</span><span id="ping"></span>
+		<button id="server"><i class="fa-solid fa-arrows-rotate"></i> Get Server</button>
+	</div>
+
+	<div class="grid">
+		<h1><i class="fa-regular fa-message"></i> Message Send</h1>
+		<input id="msg" placeholder="Please input message">
+		<input id="id" placeholder="Please input channel ID">
+		<button onClick="msg()"><i class="fa-regular fa-paper-plane"></i> Send</button>
+		<button onClick="typing()"><i class="fa-regular fa-paper-plane"></i> Send Typing</button>
+	</div>
+	<div class="grid">
+		<h1><i class="fa-solid fa-message"></i> DM</h1>
+		<input id="dmmsg" placeholder="Please input message">
+		<input id="user" placeholder="Please input user ID">
+		<button onClick="dm()"><i class="fa-solid fa-paper-plane"></i> Send</button>
+		<h1>Get</h1>
+		<button onClick="dmdelete()"><i class="fa-solid fa-trash"></i> Delete All</button>
+		<div id="dm">
+		</div>
+	</div>
+	<div class="grid">
+		<h1><i class="fa-solid fa-microphone"></i> Voice Recognition</h1>
+		<button id="start-btn">Start</button>
+		<button id="stop-btn">Stop</button>
+		<select id="guildId">
+		</select>
+		<div id="result-div"></div>
+	</div>
+	<div class="grid">
+		<h1><i class="fa-solid fa-music"></i> Music</h1>
+		<button id="pause"><i class="fa-solid fa-pause"></i> Pause</button>
+		<button id="unpause"><i class="fa-solid fa-play"></i> Unpause</button>
+		<button id="back"><i class="fa-solid fa-backward"></i> Back</button>
+		<button id="skip"><i class="fa-solid fa-forward"></i> Skip</button>
+		<button id="stop"><i class="fa-solid fa-stop"></i> Stop</button>
+		<button id="volumeUp"><i class="fa-solid fa-volume-high"></i> Volume Up</button>
+		<button id="volumeDown"><i class="fa-solid fa-volume-low"></i> Volume Down</button>
+		<button id="refresh"><i class="fa-solid fa-arrows-rotate"></i> Refresh</button>
+		<select id="musicGuildId">
+		</select>
+		<br>
+		<div id="np">
+			<h2><i class="fa-solid fa-play"></i> Now Playing</h2>
+			<h3>Name</h3>
+			<p id="name"></p>
+			<h3>Author</h3>
+			<p id="author"></p>
+			<h3>Length</h3>
+			<p id="length"></p>
+			<h3>Volume</h3>
+			<p id="volume"></p>
+			<h3>Thumbnails</h3>
+			<img id="thumbnail" width="64%" height="36%">
+			<h3>Queue</h3>
+			<p id="queue"></p>
+		</div>
+	</div>
+</body>
+<script src="/socket.io/socket.io.js"></script>
+<script>
+	var socket = io();
+	window.addEventListener('load', (event) => {
+		socket.emit("server");
+	});
+	function msg() {
+		let content = document.getElementById("msg").value;
+		let id = document.getElementById("id").value;
+		socket.emit('msg', content, id);
+	}
+
+	function dm() {
+		let msg = document.getElementById("dmmsg").value;
+		let user = document.getElementById("user").value;
+		socket.emit('dm', msg, user);
+	}
+	const refreshbtn = document.querySelector("#refresh");
+	refreshbtn.onclick = () => {
+		const selector = document.querySelector("#musicGuildId");
+		const num = selector.selectedIndex;
+		const id = selector.options[num].value;
+		socket.emit('refresh', id);
+	}
+	function typing() {
+		const id = document.getElementById('id').value;
+		socket.emit('sendTyping', id);
+	}
+	function dmdelete() {
+		document.getElementById('dm').innerHTML = "";
+	}
+	socket.on('sended', function (msg) {
+		document.getElementById("msg").value = "";
+	});
+	socket.on('dmsended', function (msg) {
+		document.getElementById("dmmsg").value = "";
+	});
+	socket.on('refresher', function (title, artist, length, volume, time, id, queue) {
+		document.getElementById("name").innerHTML = title;
+		document.getElementById("author").innerHTML = artist;
+		document.getElementById("length").innerHTML = `${time / 1000}/${length}s`;
+		document.getElementById("volume").innerHTML = `${volume * 100}%`;
+		document.getElementById("thumbnail").src = getThumbnail(id);
+		document.getElementById("queue").innerHTML = queue.join("\n");
+	});
+	socket.on('dmgeted', function (msg, tag, id) {
+		var dm = document.getElementById('dm');
+		var item = document.createElement('p');
+		item.textContent = msg;
+		var about = document.createElement('p');
+		let n = new Date;
+		n = n.toLocaleString();
+		about.textContent = tag + " " + id + " " + n;
+		dm.appendChild(item);
+		dm.appendChild(about);
+	});
+	socket.on('ping', function (ping) {
+		document.getElementById('ping').innerHTNL = ping + "ms";
+	});
+	socket.on('warn', function (message) {
+		window.alert(`Warning: Cannot send message or typing. Message: ${message}`)
+	});
+	socket.on('server', function (list, name) {
+		let i = 0;
+		document.getElementById("guildId").innerHTML = "";
+		document.getElementById("musicGuildId").innerHTML = "";
+		while (i < list.length) {
+			const temp = document.createElement("option");
+			const temp2 = document.createElement("option");
+			temp.value = list[i];
+			temp.innerHTML = name[i];
+			temp2.value = list[i];
+			temp2.innerHTML = name[i];
+			document.querySelector("#guildId").appendChild(temp2);
+			document.querySelector("#musicGuildId").appendChild(temp);
+			i++;
+		}
+	});
+
+	function getThumbnail(id) {
+		return `https://img.youtube.com/vi/${id}/maxresdefault.jpg`;
+	}
+</script>
+<script>
+	const pause = document.querySelector('#pause');
+	const unpause = document.querySelector('#unpause');
+	const stop = document.querySelector('#stop');
+	const back = document.querySelector('#back');
+	const skip = document.querySelector('#skip');
+	const startBtn = document.querySelector('#start-btn');
+	const stopBtn = document.querySelector('#stop-btn');
+	const resultDiv = document.querySelector('#result-div');
+	const id = document.querySelector("#guildId");
+	const refresh = document.querySelector("#refresh");
+	const server = document.querySelector("#server");
+	SpeechRecognition = webkitSpeechRecognition || SpeechRecognition;
+	let recognition = new SpeechRecognition();
+	recognition.lang = 'ja-JP';
+	recognition.interimResults = false;
+	recognition.continuous = true;
+	let count = 0;
+	recognition.onresult = (event) => {
+		if (event.results[count].isFinal) {
+			const result = event.results[count][0].transcript;
+			console.log(result);
+			count++;
+			resultDiv.innerHTML = result;
+			const selector = document.querySelector('#guildId');
+			const num = selector.selectedIndex;
+			const id = selector.options[num].value;
+			socket.emit('voice', result, id);
+		} else {
+			count++;
+			return;
+		}
+	}
+	startBtn.onclick = () => {
+		recognition.start();
+		count = 0;
+	}
+	stopBtn.onclick = () => {
+		recognition.stop();
+		count = 0;
+	}
+	server.onclick = () => {
+		socket.emit("server");
+	}
+	pause.onclick = () => {
+		const selector = document.querySelector('#musicGuildId');
+		const num = selector.selectedIndex;
+		const id = selector.options[num].value;
+		socket.emit("music", "pause", id);
+	}
+	unpause.onclick = () => {
+		const selector = document.querySelector('#musicGuildId');
+		const num = selector.selectedIndex;
+		const id = selector.options[num].value;
+		socket.emit("music", "unpause", id);
+	}
+</script>
+<script src="https://kit.fontawesome.com/3c77f20f48.js" crossorigin="anonymous"></script>
+
+</html>
