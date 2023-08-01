@@ -34,6 +34,25 @@ class guildQueue {
     }
 }
 
+class logger {
+    error(content) {
+        console.log(`\x1b[33m[ERROR]\x1b[39m : ${content}`);
+        return;
+    }
+    warn(content) {
+        console.log(`\x1b[41m[WARN]\x1b[39m : ${content}`);
+        return;
+    }
+    ready(content) {
+        console.log(`\x1b[32m[READY]\x1b[39m : ${content}`);
+        return;
+    }
+    info(content) {
+        console.log(`\x1b[34m[INFO]\x1b[39m : ${content}`);
+        return;
+    }
+}
+
 function reverseArray(array) {
     for (let i = 0; i < array.length / 2; i++) {
         const temp = array[i];
@@ -110,4 +129,4 @@ function convertToJapanTime(unixTime) {
     const japanDate = new Date(japanTime);
     return japanDate.toString();
 }
-module.exports = { queue, reverseArray, shuffleArray, timeStringToSeconds, formatTime, array2Collection, cutString, convertToJapanTime };
+module.exports = { queue, logger, reverseArray, shuffleArray, timeStringToSeconds, formatTime, array2Collection, cutString, convertToJapanTime };

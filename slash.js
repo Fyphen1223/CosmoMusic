@@ -81,30 +81,6 @@ const commands = [
 						.setDescription('Queue ID')
 						.setRequired(true))),
 	new SlashCommandBuilder()
-		.setName('youtube')
-		.setDescription('YouTube')
-		.addSubcommand(subcommand =>
-			subcommand.setName('search')
-				.setDescription('Search on YouTube')
-				.addStringOption(option =>
-					option.setName('keyword')
-						.setDescription('Keyword')
-						.setRequired(true)))
-		.addSubcommand(subcommand =>
-			subcommand.setName('info')
-				.setDescription('YouTube Video Information')
-				.addStringOption(option =>
-					option.setName('url')
-						.setDescription('Video URL')
-						.setRequired(true)))
-		.addSubcommand(subcommand =>
-			subcommand.setName('playlist')
-				.setDescription('YouTube Playlist Information')
-				.addStringOption(option =>
-					option.setName('url')
-						.setDescription('Playlist URL')
-						.setRequired(true))),
-	new SlashCommandBuilder()
 		.setName('skip')
 		.setDescription('Skip playing music'),
 	new SlashCommandBuilder()
@@ -121,8 +97,8 @@ const commands = [
 						.setDescription(`Enable or disable your guild's auto-replay`)
 						.setRequired(true)))
 		.addSubcommand(subcommand =>
-			subcommand.setName('useytm')
-				.setDescription(`Enable or disable your guild's use ytm`)
+			subcommand.setName('searchengine')
+				.setDescription(`Change your guild's default search enginge.`)
 				.addBooleanOption(option =>
 					option.setName('bool')
 						.setDescription(`Enable or disable your guild's use ytm`)
@@ -148,6 +124,9 @@ const commands = [
 			option.setName('seek')
 				.setDescription('Seek position ex. 2h11s')
 				.setRequired(true)),
+	new SlashCommandBuilder()
+		.setName('help')
+		.setDescription('Get help about this bot'),
 ].map(command => command.toJSON());
 const rest = new REST({ version: '10' }).setToken(config.bot.token);
 const reset = [];

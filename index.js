@@ -37,6 +37,7 @@ const Nodes = [{
 const shoukaku = new Shoukaku(new Connectors.DiscordJS(client), Nodes);
 const util = require("./utils/utils.js");
 var queue = new util.queue();
+const log = new util.logger();
 
 const fs = require("fs");
 const Genius = require("genius-lyrics");
@@ -71,7 +72,7 @@ let guildNameList = [];
 
 client.shoukaku = shoukaku;
 client.on('ready', (u) => {
-    console.log(`Ready: Logged in as ${u.user.tag}`);
+    log.ready(`Logged in as ${u.user.tag}`);
     for (const [key, value] of client.guilds.cache) {
         guildList.push(key);
     }
@@ -158,6 +159,7 @@ client.on("interactionCreate", async (interaction) => {
             });
             await interaction.editReply({ embeds: [joinedEmbed] });
             queue[guildId].voiceChannel = interaction.member.voice.channelId;
+            queue[guildId].textChannel = interaction.channel;
             addEventListenerToPlayer(guildId);
             return;
         }
@@ -172,10 +174,31 @@ client.on("interactionCreate", async (interaction) => {
             queue[guildId].textChannel = interaction.channel;
             addEventListenerToPlayer(guildId);
         }
-        if ((queue[guildId].queue.length !== 0) && queue[guildId].player.status === "finished") {
+        if ((queue[guildId].queue.length !== 0) && queue[guildId].player.status === "finished" && !query) {
+            if (!queue[guildId].voiceChannel) {
+                queue[guildId].player = await shoukaku.joinVoiceChannel({
+                    guildId: guildId,
+                    channelId: interaction.member.voice.channelId,
+                    shardId: 0
+                });
+                queue[guildId].voiceChannel = interaction.member.voice.channelId;
+                queue[guildId].textChannel = interaction.channel;
+                console.log("Hi1");
+            }
             await startPlay(guildId);
             await interaction.editReply("Started playing queue");
             return;
+        }
+        if ((queue[guildId].queue.length !== 0) && queue[guildId].player.status === "finished" && query) {
+            if (!queue[guildId].voiceChannel) {
+                queue[guildId].player = await shoukaku.joinVoiceChannel({
+                    guildId: guildId,
+                    channelId: interaction.member.voice.channelId,
+                    shardId: 0
+                });
+                queue[guildId].voiceChannel = interaction.member.voice.channelId;
+                queue[guildId].textChannel = interaction.channel;
+            }
         }
         if (interaction.member.voice.channelId !== queue[guildId].voiceChannel) {
             await interaction.editReply("Please join my VC!");
@@ -229,6 +252,10 @@ client.on("interactionCreate", async (interaction) => {
             await interaction.editReply({ embeds: [noValidVCEmbed] });
             return;
         }
+        if (queue[guildId].player.status !== "playing") {
+            await interaction.editReply("Sorry, he player is not playing any audio.");
+            return;
+        }
         const seek = interaction.options.getString("seek");
         const position = util.timeStringToSeconds(seek);
         await queue[guildId].player.seekTo(position * 1000);
@@ -244,6 +271,10 @@ client.on("interactionCreate", async (interaction) => {
                 iconURL: `${interaction.user.avatarURL({})}`,
             });
             await interaction.editReply({ embeds: [noValidVCEmbed] });
+            return;
+        }
+        if (queue[guildId].player.status !== "playing") {
+            await interaction.editReply("Sorry, he player is not playing any audio.");
             return;
         }
         try {
@@ -267,6 +298,10 @@ client.on("interactionCreate", async (interaction) => {
             await interaction.editReply({ embeds: [noValidVCEmbed] });
             return;
         }
+        if (queue[guildId].player.status !== "playing") {
+            await interaction.editReply("Sorry, he player is not playing any audio.");
+            return;
+        }
         try {
             queue[guildId].player.setPaused(false);
             await interaction.editReply(`Resumed by ${interaction.user}`);
@@ -286,6 +321,10 @@ client.on("interactionCreate", async (interaction) => {
                 iconURL: `${interaction.user.avatarURL({})}`,
             });
             await interaction.editReply({ embeds: [noValidVCEmbed] });
+            return;
+        }
+        if (queue[guildId].player.status !== "playing") {
+            await interaction.editReply("Sorry, he player is not playing any audio.");
             return;
         }
         const index = queue[guildId].index + 1;
@@ -309,6 +348,10 @@ client.on("interactionCreate", async (interaction) => {
                 iconURL: `${interaction.user.avatarURL({})}`,
             });
             await interaction.editReply({ embeds: [noValidVCEmbed] });
+            return;
+        }
+        if (queue[guildId].player.status !== "playing") {
+            await interaction.editReply("Sorry, he player is not playing any audio.");
             return;
         }
         const index = queue[guildId].index - 1;
@@ -440,7 +483,7 @@ client.on("interactionCreate", async (interaction) => {
             }
         }
     }
-    if (customId === "volumeUp" || customId === "volumeDown") {
+    if (customId === ("volumeDown" || "volumeUp")) {
         await interaction.deferReply();
         if (!queue[guildId]) queue.add(guildId);
         if (!interaction.member.voice.channelId || interaction.member.voice.channelId !== queue[guildId].voiceChannel) {
@@ -452,6 +495,10 @@ client.on("interactionCreate", async (interaction) => {
             return;
         }
         const current = queue[guildId].volume;
+        if (queue[guildId].player.status !== "playing") {
+            await interaction.editReply("Sorry, he player is not playing any audio.");
+            return;
+        }
         if (customId === "volumeUp") {
             const before = current + 10;
             if (before < 200) {
@@ -477,17 +524,66 @@ client.on("interactionCreate", async (interaction) => {
         }
     }
     if (customId === "30p") {
-
+        await interaction.deferReply();
+        if (!queue[guildId]) queue.add(guildId);
+        if (interaction.member.voice.channelId !== queue[guildId].voiceChannel) {
+            const noValidVCEmbed = new EmbedBuilder().setColor(config.config.color.info).setAuthor({
+                name: ` | 🚫 - Please join a valid voice channel first!`,
+                iconURL: `${interaction.user.avatarURL({})}`,
+            });
+            await interaction.editReply({ embeds: [noValidVCEmbed] });
+            return;
+        }
+        if (queue[guildId].player.status !== "playing") {
+            await interaction.editReply("Sorry, he player is not playing any audio.");
+            return;
+        }
+        const current = queue[guildId].player.position;
+        const after = current + 30000;
+        if (after <= queue[guildId].queue[queue[guildId].index].data.length) {
+            await interaction.editReply("Sorry, you cannnot seek tover the duration of the resource.");
+            return;
+        }
+        queue[guildId].player.seekTo(after);
+        await interaction.editReply("Skip 30s");
+        return;
     }
     if (customId === "30m") {
-
-    }
-    if (interaction.customId === "lyric" || interaction.commandName === "lyric") {
         await interaction.deferReply();
+        if (!queue[guildId]) queue.add(guildId);
+        if (interaction.member.voice.channelId !== queue[guildId].voiceChannel) {
+            const noValidVCEmbed = new EmbedBuilder().setColor(config.config.color.info).setAuthor({
+                name: ` | 🚫 - Please join a valid voice channel first!`,
+                iconURL: `${interaction.user.avatarURL({})}`,
+            });
+            await interaction.editReply({ embeds: [noValidVCEmbed] });
+            return;
+        }
+        if (queue[guildId].player.status !== "playing") {
+            await interaction.editReply("Sorry, he player is not playing any audio.");
+            return;
+        }
+        const current = queue[guildId].player.position;
+        const after = current - 30000;
+        if (after <= 1) {
+            await interaction.editReply("Sorry, you cannnot seek tover the duration of the resource.");
+            return;
+        }
+        queue[guildId].player.seekTo(after);
+        await interaction.editReply("Back 30s");
+        return;
+    }
+    if ((customId || commandName) === "lyric") {
+        await interaction.deferReply();
+        if (!queue[guildId]) queue.add(guildId);
+        if (queue[guildId].player.status !== "playing") {
+            await interaction.editReply("Sorry, he player is not playing any audio.");
+            return;
+        }
         const index = queue[guildId].index;
-        let artist = queue[guildId].queue[index].data.info.artist;
+        let artist = queue[guildId].queue[index].data.info.author;
         let song = queue[guildId].queue[index].data.info.title;
-        let songs = await lyricsSearcher.songs.search(`${artist.replace(" - Topic", "")} ${song}`);
+        let songs = await lyricsSearcher.songs.search(`${song}`);
         try {
             const target = await songs[0].lyrics();
             const embed = new EmbedBuilder().setColor(config.config.color.info).setTitle("Lyrics").setDescription(util.cutString(target));
@@ -495,6 +591,26 @@ client.on("interactionCreate", async (interaction) => {
         } catch (err) {
             await interaction.editReply("Sorry, but the lyric was not found.");
         }
+        return;
+    }
+    if ((customId || commandName) === "stop") {
+        await interaction.deferReply();
+        if (!queue[guildId]) queue.add(guildId);
+        if (interaction.member.voice.channelId !== queue[guildId].voiceChannel) {
+            const noValidVCEmbed = new EmbedBuilder().setColor(config.config.color.info).setAuthor({
+                name: ` | 🚫 - Please join a valid voice channel first!`,
+                iconURL: `${interaction.user.avatarURL({})}`,
+            });
+            await interaction.editReply({ embeds: [noValidVCEmbed] });
+            console.log(queue[guildId].voiceChannel);
+            return;
+        }
+        queue[guildId].voiceChannel = "";
+        queue[guildId].textChannel = "";
+        queue[guildId].player.status = "finished";
+        await shoukaku.leaveVoiceChannel(guildId);
+        await interaction.editReply("Stopped playing");
+        return;
     }
 });
 
@@ -872,18 +988,19 @@ async function eventOnResumed(guildId) {
 }
 
 client.login(config.bot.token);
-shoukaku.on('error', (_, error) => console.error(error));
+shoukaku.on('error', (_, error) => log.error(error));
 shoukaku.on('ready', async (data) => {
-    console.log("Lavalink is ready");
+    log.ready("Lavalink is ready")
     return;
 });
 process.on('uncaughtException', (err) => {
-    console.log(`\x1b[41m[ERROR]\x1b[49m: ${err.stack} `);
+    log.error(err);
     return;
 });
 
 server.listen(config.config.adminPort, () => {
-    console.log(`👂 - Listening on http://localhost:${config.config.adminPort}, Please edit config.json if you want to change port number... (Step 4/4)`);
+    log.ready(`Server started on ${config.config.adminPort}`);
+    log.info("If you want to change port number, please edit config.json")
 });
 if (app.get("env") === "production") {
     app.set("trust proxy", 1);
