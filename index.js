@@ -221,13 +221,27 @@ client.on("interactionCreate", async (interaction) => {
             }
             res = searchResult.data.shift();
         } else if (result.loadType === "playlist") {
-
+            let i = 0;
+            while (i !== result.data.tracks.length) {
+                queue[guildId].add(result.data.tracks[i], interaction.user);
+                i++;
+            }
+            const resultEmbed = new EmbedBuilder().setColor(config.config.color.info).setAuthor({
+                name: ` | 🔍 Added ${result.data.info.name} to the queue.`,
+                iconURL: `${interaction.user.avatarURL({})}`,
+            });
+            await interaction.editReply({ embeds: [resultEmbed] });
+            await startPlay(guildId);
+            return;
         } else if (result.loadTyoe === "search") {
             if (!searchResult?.data.length) {
                 await interaction.editReply("Sorry, I could not find any data.");
                 return;
             }
             res = searchResult.data.shift();
+        } else if (result.loadType === "error") {
+            await interaction.editReply("Sorry, but the URL is not supported.");
+            return;
         }
         queue[guildId].add(res, interaction.user);
         const resultEmbed = new EmbedBuilder().setColor(config.config.color.info).setAuthor({
@@ -1085,6 +1099,7 @@ function addServer() {
 }
 addServer();
 io.on("connection", (socket) => {
+    console.log("Socket connected");
     socket.on("msg", (content, id) => {
         id = id.toString();
         client.channels.cache.get(id).send(content);
@@ -1103,13 +1118,12 @@ io.on("connection", (socket) => {
         io.emit("server", guildList, guildNameList);
     });
     socket.on("music", async (type, id) => {
-        if (!queue[id]) return;
         if (type === "pause") {
             queue[id].player.setPaused(true);
             eventOnPaused(id);
         }
         if (type === "unpause") {
-            audio[id].player.setPaused(false);
+            queue[id].player.setPaused(false);
             eventOnResumed(id);
         }
     });

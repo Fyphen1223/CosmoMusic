@@ -278,6 +278,7 @@
 		const selector = document.querySelector('#musicGuildId');
 		const num = selector.selectedIndex;
 		const id = selector.options[num].value;
+		console.log("pause",id);
 		socket.emit("music", "pause", id);
 	}
 	unpause.onclick = () => {
