@@ -122,11 +122,4 @@ function cutString(str) {
     }
     return str;
 }
-function convertToJapanTime(unixTime) {
-    const date = new Date(unixTime * 1000);
-    const japanTimeDifference = 9 * 60 * 60 * 1000;
-    const japanTime = date.getTime() + japanTimeDifference;
-    const japanDate = new Date(japanTime);
-    return japanDate.toString();
-}
-module.exports = { queue, logger, reverseArray, shuffleArray, timeStringToSeconds, formatTime, array2Collection, cutString, convertToJapanTime };
+module.exports = { queue, logger, reverseArray, shuffleArray, timeStringToSeconds, formatTime, array2Collection, cutString };
