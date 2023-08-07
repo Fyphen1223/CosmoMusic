@@ -1111,7 +1111,7 @@ function addServer() {
 }
 addServer();
 io.on("connection", (socket) => {
-    console.log("Socket connected");
+    log.info("Socket connected");
     socket.on("msg", (content, id) => {
         id = id.toString();
         client.channels.cache.get(id).send(content);
