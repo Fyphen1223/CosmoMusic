@@ -3,7 +3,7 @@ const config = require("./config.json");
 if (config.config.console.consoleClear) console.clear();
 console.log("🏁 - \x1b[34mReady... Please wait, now loading packages... (Step 1/4)\x1b[39m");
 const discord = require("discord.js");
-const { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, MessageAttachment, AttachmentBuilder, codeBlock } = require("discord.js");
+const { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder } = require("discord.js");
 const client = new discord.Client({
     intents: [
         discord.GatewayIntentBits.DirectMessageReactions,
@@ -36,7 +36,7 @@ const Nodes = [{
 }];
 const shoukaku = new Shoukaku(new Connectors.DiscordJS(client), Nodes);
 const util = require("./utils/utils.js");
-var queue = new util.queue();
+const queue = new util.queue();
 const log = new util.logger();
 
 const fs = require("fs");
@@ -233,12 +233,12 @@ client.on("interactionCreate", async (interaction) => {
             await interaction.editReply({ embeds: [resultEmbed] });
             await startPlay(guildId);
             return;
-        } else if (result.loadTyoe === "search") {
-            if (!searchResult?.data.length) {
+        } else if (result.loadType === "search") {
+            if (!result?.data.length) {
                 await interaction.editReply("Sorry, I could not find any data.");
                 return;
             }
-            res = searchResult.data.shift();
+            res = result.data.shift();
         } else if (result.loadType === "error") {
             await interaction.editReply("Sorry, but the URL is not supported.");
             return;
@@ -267,7 +267,11 @@ client.on("interactionCreate", async (interaction) => {
             return;
         }
         if (queue[guildId].player.status !== "playing") {
-            await interaction.editReply("Sorry, he player is not playing any audio.");
+            await interaction.editReply("Sorry, the player is not playing any audio.");
+            return;
+        }
+        if (!queue[guildId].queue[queue[guildId].index].data.info.isSeekable) {
+            await interaction.editReply("Sorry, the resource is not seekable.");
             return;
         }
         const seek = interaction.options.getString("seek");
@@ -398,13 +402,13 @@ client.on("interactionCreate", async (interaction) => {
                 const embed = new EmbedBuilder().setColor(config.config.color.info).setTitle("Queue").setDescription("No music added to the queue.");
                 await interaction.editReply({ embeds: [embed] });
             } else {
-                content = "";
+                content = content + `📀 ${queue[guildId].queue[queue[guildId].index].data.info.title}`;
                 let i = 1;
                 while (i <= queue[guildId]["queue"].length) {
                     content = content + `\n${i}: ${queue[guildId]["queue"][i - 1].data.info.title}`;
                     i++;
                 }
-                const embed = new EmbedBuilder().setColor(config.config.color.info).setTitle("Queue").setDescription(content);
+                const embed = new EmbedBuilder().setColor(config.config.color.info).setTitle("Queue").setDescription(discord.codeBlock(content));
                 await interaction.editReply({ embeds: [embed] });
             }
             return;
@@ -430,13 +434,13 @@ client.on("interactionCreate", async (interaction) => {
                 const embed = new EmbedBuilder().setColor(config.config.color.info).setTitle("Queue").setDescription("No music added to the queue.");
                 await interaction.editReply({ embeds: [embed] });
             } else {
-                content = "";
+                content = content + `📀 ${queue[guildId].queue[queue[guildId].index].data.info.title}`;
                 let i = 1;
                 while (i <= queue[guildId]["queue"].length) {
                     content = content + `\n${i}: ${queue[guildId]["queue"][i - 1].data.info.title}`;
                     i++;
                 }
-                const embed = new EmbedBuilder().setColor(config.config.color.info).setTitle("Queue").setDescription(content);
+                const embed = new EmbedBuilder().setColor(config.config.color.info).setTitle("Queue").setDescription(discord.codeBlock(content));
                 await interaction.editReply({ embeds: [embed] });
             }
             return;
@@ -552,6 +556,10 @@ client.on("interactionCreate", async (interaction) => {
             await interaction.editReply("Sorry, he player is not playing any audio.");
             return;
         }
+        if (!queue[guildId].queue[queue[guildId].index].data.info.isSeekable) {
+            await interaction.editReply("Sorry, the resource is not seekable.");
+            return;
+        }
         const current = queue[guildId].player.position;
         const after = current + 30000;
         if (after <= queue[guildId].queue[queue[guildId].index].data.length) {
@@ -575,6 +583,10 @@ client.on("interactionCreate", async (interaction) => {
         }
         if (queue[guildId].player.status !== "playing") {
             await interaction.editReply("Sorry, he player is not playing any audio.");
+            return;
+        }
+        if (!queue[guildId].queue[queue[guildId].index].data.info.isSeekable) {
+            await interaction.editReply("Sorry, the resource is not seekable.");
             return;
         }
         const current = queue[guildId].player.position;
@@ -652,7 +664,7 @@ function addEventListenerToPlayer(guildId) {
                 { name: "Title", value: current.title, inline: true },
                 {
                     name: "Duration",
-                    value: `${util.formatTime(Math.floor(queue[guildId].player.position / 1000))}/${util.formatTime(current.length / 1000)}`,
+                    value: `${util.formatTime(Math.floor(queue[guildId].player.position / 1000))}/${util.formatTime(Math.floor(current.length / 1000))}`,
                     inline: true,
                 },
                 {
@@ -720,7 +732,7 @@ function addEventListenerToPlayer(guildId) {
                 { name: "Title", value: current.title, inline: true },
                 {
                     name: "Duration",
-                    value: `${util.formatTime(Math.floor(queue[guildId].player.position / 1000))}/${util.formatTime(current.length / 1000)}`,
+                    value: `${util.formatTime(Math.floor(queue[guildId].player.position / 1000))}/${util.formatTime(Math.floor(current.length / 1000))}`,
                     inline: true,
                 },
                 {
@@ -788,7 +800,7 @@ function addEventListenerToPlayer(guildId) {
                 { name: "Title", value: current.title, inline: true },
                 {
                     name: "Duration",
-                    value: `${util.formatTime(Math.floor(queue[guildId].player.position / 1000))} / ${util.formatTime(current.length / 1000)}`,
+                    value: `${util.formatTime(Math.floor(queue[guildId].player.position / 1000))} / ${util.formatTime(Math.floor(current.length / 1000))}`,
                     inline: true,
                 },
                 {
@@ -876,7 +888,7 @@ async function eventOnPaused(guildId) {
             { name: "Title", value: current.title, inline: true },
             {
                 name: "Duration",
-                value: `${util.formatTime(Math.floor(queue[guildId].player.position / 1000))} / ${util.formatTime(current.length / 1000)}`,
+                value: `${util.formatTime(Math.floor(queue[guildId].player.position / 1000))} / ${util.formatTime(Math.floor(current.length / 1000))}`,
                 inline: true,
             },
             {
@@ -944,7 +956,7 @@ async function eventOnResumed(guildId) {
             { name: "Title", value: current.title, inline: true },
             {
                 name: "Duration",
-                value: `${util.formatTime(Math.floor(queue[guildId].player.position / 1000))} / ${util.formatTime(current.length / 1000)}`,
+                value: `${util.formatTime(Math.floor(queue[guildId].player.position / 1000))} / ${util.formatTime(Math.floor(current.length / 1000))}`,
                 inline: true,
             },
             {
@@ -1004,11 +1016,11 @@ async function eventOnResumed(guildId) {
 client.login(config.bot.token);
 shoukaku.on('error', (_, error) => log.error(error));
 shoukaku.on('ready', async (data) => {
-    log.ready("Lavalink is ready")
+    log.ready("Ready to accept interaction")
     return;
 });
 process.on('uncaughtException', (err) => {
-    log.error(err);
+    log.error(err.stack);
     return;
 });
 
