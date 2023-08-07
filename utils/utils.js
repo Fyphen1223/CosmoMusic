@@ -122,4 +122,14 @@ function cutString(str) {
     }
     return str;
 }
-module.exports = { queue, logger, reverseArray, shuffleArray, timeStringToSeconds, formatTime, array2Collection, cutString };
+function tryRequire(str) {
+    let res = null;
+    try {
+        res = require(`${str}`);
+        return res;
+    } catch (err) {
+        console.log(err);
+        return null;
+    }
+}
+module.exports = { queue, logger, reverseArray, shuffleArray, timeStringToSeconds, formatTime, array2Collection, cutString, tryRequire };

@@ -38,6 +38,7 @@ const shoukaku = new Shoukaku(new Connectors.DiscordJS(client), Nodes);
 const util = require("./utils/utils.js");
 const queue = new util.queue();
 const log = new util.logger();
+var playlist = tryRequire("./db/playlist.json");
 
 const fs = require("fs");
 const Genius = require("genius-lyrics");
@@ -292,7 +293,7 @@ client.on("interactionCreate", async (interaction) => {
             return;
         }
         if (queue[guildId].player.status !== "playing") {
-            await interaction.editReply("Sorry, he player is not playing any audio.");
+            await interaction.editReply("Sorry, the player is not playing any audio.");
             return;
         }
         try {
@@ -317,7 +318,7 @@ client.on("interactionCreate", async (interaction) => {
             return;
         }
         if (queue[guildId].player.status !== "playing") {
-            await interaction.editReply("Sorry, he player is not playing any audio.");
+            await interaction.editReply("Sorry,the player is not playing any audio.");
             return;
         }
         try {
@@ -342,7 +343,7 @@ client.on("interactionCreate", async (interaction) => {
             return;
         }
         if (queue[guildId].player.status !== "playing") {
-            await interaction.editReply("Sorry, he player is not playing any audio.");
+            await interaction.editReply("Sorry,the player is not playing any audio.");
             return;
         }
         const index = queue[guildId].index + 1;
@@ -369,7 +370,7 @@ client.on("interactionCreate", async (interaction) => {
             return;
         }
         if (queue[guildId].player.status !== "playing") {
-            await interaction.editReply("Sorry, he player is not playing any audio.");
+            await interaction.editReply("Sorry,the player is not playing any audio.");
             return;
         }
         const index = queue[guildId].index - 1;
@@ -514,7 +515,7 @@ client.on("interactionCreate", async (interaction) => {
         }
         const current = queue[guildId].volume;
         if (queue[guildId].player.status !== "playing") {
-            await interaction.editReply("Sorry, he player is not playing any audio.");
+            await interaction.editReply("Sorry,the player is not playing any audio.");
             return;
         }
         if (customId === "volumeUp") {
@@ -553,7 +554,7 @@ client.on("interactionCreate", async (interaction) => {
             return;
         }
         if (queue[guildId].player.status !== "playing") {
-            await interaction.editReply("Sorry, he player is not playing any audio.");
+            await interaction.editReply("Sorry,the player is not playing any audio.");
             return;
         }
         if (!queue[guildId].queue[queue[guildId].index].data.info.isSeekable) {
@@ -582,7 +583,7 @@ client.on("interactionCreate", async (interaction) => {
             return;
         }
         if (queue[guildId].player.status !== "playing") {
-            await interaction.editReply("Sorry, he player is not playing any audio.");
+            await interaction.editReply("Sorry,the player is not playing any audio.");
             return;
         }
         if (!queue[guildId].queue[queue[guildId].index].data.info.isSeekable) {
@@ -599,11 +600,11 @@ client.on("interactionCreate", async (interaction) => {
         await interaction.editReply("Back 30s");
         return;
     }
-    if ((customId || commandName) === "lyric") {
+    if ((customId || command) === "lyric") {
         await interaction.deferReply();
         if (!queue[guildId]) queue.add(guildId);
         if (queue[guildId].player.status !== "playing") {
-            await interaction.editReply("Sorry, he player is not playing any audio.");
+            await interaction.editReply("Sorry,the player is not playing any audio.");
             return;
         }
         const index = queue[guildId].index;
@@ -619,7 +620,7 @@ client.on("interactionCreate", async (interaction) => {
         }
         return;
     }
-    if ((customId || commandName) === "stop") {
+    if ((customId || command) === "stop") {
         await interaction.deferReply();
         if (!queue[guildId]) queue.add(guildId);
         if (interaction.member.voice.channelId !== queue[guildId].voiceChannel) {
@@ -637,6 +638,45 @@ client.on("interactionCreate", async (interaction) => {
         await shoukaku.leaveVoiceChannel(guildId);
         await interaction.editReply("Stopped playing");
         return;
+    }
+    if (command === "playlist") {
+        await interaction.deferReply();
+        if (!queue[guildId]) queue.add(guildId);
+        if (!interaction.member.voice.channelId || interaction.member.voice.channelId !== queue[guildId].voiceChannel) {
+            const noValidVCEmbed = new EmbedBuilder().setColor(config.config.color.info).setAuthor({
+                name: ` | 🚫 - Please join a valid voice channel first!`,
+                iconURL: `${interaction.user.avatarURL({})}`,
+            });
+            await interaction.editReply({ embeds: [noValidVCEmbed] });
+            return;
+        }
+        if (queue[guildId].player.status !== "playing") {
+            await interaction.editReply("Sorry, the player is not playing any audio.");
+            return;
+        }
+        const subcommand = interaction.options.getSubcommand();
+        if (subcommand === "save") {
+            const index = playlist.playlist.length + 1;
+            let data = {
+                [index]: {
+                    queue: queue[guildId].queue,
+                    author: interaction.user
+                }
+            }
+            playlist.playlist.push(data);
+            fs.writeFileSync("./db/playlist.json", JSON.stringify(playlist));
+            await interaction.editReply(`Added the queue to public playlist. Your playlist's ID is ${index}`);
+            return;
+        }
+        if (subcommand === "load") {
+            const id = interaction.options.getInteger("id");
+            if (!playlist.playlist[id]) {
+                await interaction.editReply("Sorry, the playlist does not exist.");
+                return;
+            }
+            await interaction.editReply(`Added the public playlist to the queue.`);
+            return;
+        }
     }
 });
 
@@ -1011,6 +1051,17 @@ async function eventOnResumed(guildId) {
     }
     queue[guildId].panel = msg;
 
+}
+
+function tryRequire(str) {
+    let res = null;
+    try {
+        res = require(`${str}`);
+        return res;
+    } catch (err) {
+        console.log(err);
+        return null;
+    }
 }
 
 client.login(config.bot.token);

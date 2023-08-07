@@ -60,4 +60,3 @@ dist
 
 /config.json
 *.pem
-db/
