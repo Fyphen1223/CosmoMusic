@@ -127,6 +127,13 @@ const commands = [
 	new SlashCommandBuilder()
 		.setName('help')
 		.setDescription('Get help about this bot'),
+	new SlashCommandBuilder()
+		.setName('skipto')
+		.setDescription('Skip to the any point in the queue.')
+		.addIntegerOption(option =>
+			option.setName('position')
+				.setDescription('Target position 1 ~ queue size')
+				.setRequired(true)),
 ].map(command => command.toJSON());
 const rest = new REST({ version: '10' }).setToken(config.bot.token);
 const reset = [];

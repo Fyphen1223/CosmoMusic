@@ -122,6 +122,18 @@ function cutString(str) {
     }
     return str;
 }
+
+function formatString(str, int) {
+    let res = "";
+    if (str.length > int) {
+        let res = str.substring(0, int - 20);
+        res = res + `\n... and ${str.length - (int + 10)} left`;
+        return;
+    }
+
+    return str;
+}
+
 function tryRequire(str) {
     let res = null;
     try {
@@ -132,4 +144,4 @@ function tryRequire(str) {
         return null;
     }
 }
-module.exports = { queue, logger, reverseArray, shuffleArray, timeStringToSeconds, formatTime, array2Collection, cutString, tryRequire };
+module.exports = { formatString, queue, logger, reverseArray, shuffleArray, timeStringToSeconds, formatTime, array2Collection, cutString, tryRequire };

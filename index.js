@@ -26,8 +26,6 @@ const client = new discord.Client({
     ],
     partials: [discord.Partials.Channel, discord.Partials.GuildMember, discord.Partials.GuildScheduledEvent, discord.Partials.Message, discord.Partials.Reaction, discord.Partials.ThreadMember, discord.Partials.User],
 });
-const { ytUtil } = require("ytutil");
-const ytU = new ytUtil();
 const { Shoukaku, Connectors } = require('shoukaku');
 const Nodes = [{
     name: config.lavalink.name,
@@ -39,7 +37,6 @@ const util = require("./utils/utils.js");
 const queue = new util.queue();
 const log = new util.logger();
 var playlist = tryRequire("./db/playlist.json");
-
 const fs = require("fs");
 const Genius = require("genius-lyrics");
 const lyricsSearcher = new Genius.Client(config.token.genius);
@@ -115,16 +112,16 @@ client.on("interactionCreate", async (interaction) => {
     }
     if (interaction.commandName === "play") {
         const focusedValue = interaction.options.getFocused();
-        const res = await ytU.search(focusedValue);
+        const node = await shoukaku.getIdealNode();
+        const res = await node.rest.resolve(`ytsearch:${focusedValue}`);
         const list = [];
         let i = 0;
         while (i < 5) {
             try {
-                list.push(`${res[i].title}`);
+                list.push(`${res.data[i].info.title}`);
             } catch (err) { }
             i++;
         }
-        const filtered = list.filter((choice) => choice);
         await interaction.respond(list.map((choice) => ({ name: choice, value: choice })));
     }
 });
@@ -232,6 +229,7 @@ client.on("interactionCreate", async (interaction) => {
                 iconURL: `${interaction.user.avatarURL({})}`,
             });
             await interaction.editReply({ embeds: [resultEmbed] });
+            if (queue[guildId].player.status === "playing") return;
             await startPlay(guildId);
             return;
         } else if (result.loadType === "search") {
@@ -318,7 +316,7 @@ client.on("interactionCreate", async (interaction) => {
             return;
         }
         if (queue[guildId].player.status !== "playing") {
-            await interaction.editReply("Sorry,the player is not playing any audio.");
+            await interaction.editReply("Sorry, the player is not playing any audio.");
             return;
         }
         try {
@@ -409,7 +407,7 @@ client.on("interactionCreate", async (interaction) => {
                     content = content + `\n${i}: ${queue[guildId]["queue"][i - 1].data.info.title}`;
                     i++;
                 }
-                const embed = new EmbedBuilder().setColor(config.config.color.info).setTitle("Queue").setDescription(discord.codeBlock(content));
+                const embed = new EmbedBuilder().setColor(config.config.color.info).setTitle("Queue").setDescription(discord.codeBlock(util.formatString(content, 2000)));
                 await interaction.editReply({ embeds: [embed] });
             }
             return;
@@ -420,12 +418,11 @@ client.on("interactionCreate", async (interaction) => {
                 await interaction.editReply("Nothing to search here.");
                 return;
             } else {
-                const res = await ytU.search(`${current.author}`);
-                const first = await node.rest.resolve(res[0]["link"]);
-                const second = await node.rest.resolve(res[1]["link"]);
-                queue[guildId].add(first.data, interaction.user);
-                queue[guildId].add(second.data, interaction.user);
-                await interaction.editReply(`Added ${res[0]["title"]} and ${res[1]["title"]} to the queue.`);
+                const res = await node.rest.resolve(`ytsearch:${current.author}`);
+                console.log(res);
+                queue[guildId].add(res.data[0], interaction.user);
+                queue[guildId].add(res.data[1], interaction.user);
+                await interaction.editReply(`Added ${res.data[0].info.title} and ${res.data[1].info.title} to the queue.`);
             }
             return;
         }
@@ -441,7 +438,7 @@ client.on("interactionCreate", async (interaction) => {
                     content = content + `\n${i}: ${queue[guildId]["queue"][i - 1].data.info.title}`;
                     i++;
                 }
-                const embed = new EmbedBuilder().setColor(config.config.color.info).setTitle("Queue").setDescription(discord.codeBlock(content));
+                const embed = new EmbedBuilder().setColor(config.config.color.info).setTitle("Queue").setDescription(discord.codeBlock(util.formatString(content, 2000)));
                 await interaction.editReply({ embeds: [embed] });
             }
             return;
@@ -554,7 +551,7 @@ client.on("interactionCreate", async (interaction) => {
             return;
         }
         if (queue[guildId].player.status !== "playing") {
-            await interaction.editReply("Sorry,the player is not playing any audio.");
+            await interaction.editReply("Sorry, the player is not playing any audio.");
             return;
         }
         if (!queue[guildId].queue[queue[guildId].index].data.info.isSeekable) {
@@ -677,6 +674,36 @@ client.on("interactionCreate", async (interaction) => {
             await interaction.editReply(`Added the public playlist to the queue.`);
             return;
         }
+    }
+    if (command === "skipto") {
+        await interaction.deferReply();
+        if (!queue[guildId]) queue.add(guildId);
+        if (interaction.member.voice.channelId !== queue[guildId].voiceChannel) {
+            const noValidVCEmbed = new EmbedBuilder().setColor(config.config.color.info).setAuthor({
+                name: ` | 🚫 - Please join a valid voice channel first!`,
+                iconURL: `${interaction.user.avatarURL({})}`,
+            });
+            await interaction.editReply({ embeds: [noValidVCEmbed] });
+            return;
+        }
+        if (queue[guildId].player.status !== "playing") {
+            await interaction.editReply("Sorry, the player is not playing any audio.");
+            return;
+        }
+        const position = interaction.options.getInteger("position");
+        if (queue[guildId].queue.length < position || position <= 0) {
+            await interaction.editReply("The position is invalid.");
+            return;
+        }
+        queue[guildId].index = position - 1;
+        const index = queue[guildId].index;
+        queue[guildId].suppressEnd = true;
+        await queue[guildId].player.playTrack({ track: queue[guildId].queue[index].data.encoded });
+        await interaction.editReply(`Skip to ${position}`);
+        return;
+    }
+    if (command === "config") {
+
     }
 });
 
@@ -896,7 +923,6 @@ function addEventListenerToPlayer(guildId) {
         queue[guildId].panel = msg;
     });
     queue[guildId].player.on("end", async function (s) {
-        queue[guildId].player.status = "finished";
         const index = queue[guildId].index + 1;
         if (queue[guildId].suppressEnd) return;
         if (index === queue[guildId].queue.length) {
@@ -905,6 +931,7 @@ function addEventListenerToPlayer(guildId) {
                 return;
             } else {
                 await queue[guildId].textChannel.send("Finished playing queue.");
+                queue[guildId].player.status = "finished";
                 return;
             }
         } else {
@@ -1067,7 +1094,8 @@ function tryRequire(str) {
 client.login(config.bot.token);
 shoukaku.on('error', (_, error) => log.error(error));
 shoukaku.on('ready', async (data) => {
-    log.ready("Ready to accept interaction")
+    log.ready(`Ready to accept commands. Boot took ${(new Date() - start) / 1000}s`);
+    console.log(await fs.readFileSync("./assets/logo.txt").toString());
     return;
 });
 process.on('uncaughtException', (err) => {
@@ -1077,7 +1105,7 @@ process.on('uncaughtException', (err) => {
 
 server.listen(config.config.adminPort, () => {
     log.ready(`Server started on ${config.config.adminPort}`);
-    log.info("If you want to change port number, please edit config.json")
+    log.info("If you want to change port number, please edit config.json");
 });
 if (app.get("env") === "production") {
     app.set("trust proxy", 1);

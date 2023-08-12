@@ -1,13 +1,19 @@
 {
-  "name": "cosmo-lamp",
-  "version": "1.0.0",
+  "name": "cosmo-music",
+  "version": "0.0.1",
   "description": "The most great discord music bot which provide spreme music experience.",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": [
+    "discord",
+    "music",
+    "music bot",
+    "cosmo music",
+    "highend music"
+  ],
+  "author": "fyphen",
   "license": "ISC",
   "dependencies": {
     "body-parser": "^1.20.2",
@@ -16,7 +22,6 @@
     "express-session": "^1.17.3",
     "genius-lyrics": "^4.4.3",
     "shoukaku": "github:Deivu/Shoukaku",
-    "socket.io": "^4.7.1",
-    "ytutil": "^0.0.13"
+    "socket.io": "^4.7.1"
   }
 }
