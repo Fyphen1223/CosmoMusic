@@ -60,3 +60,4 @@ dist
 
 /config.json
 *.pem
+/lavalink/application.yml
