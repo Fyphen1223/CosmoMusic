@@ -281,15 +281,7 @@ client.on("interactionCreate", async (interaction) => {
     }
     if ((command || customId) === "pause") {
         await interaction.deferReply();
-        if (!queue[guildId]) queue.add(guildId);
-        if (interaction.member.voice.channelId !== queue[guildId].voiceChannel) {
-            const noValidVCEmbed = new EmbedBuilder().setColor(config.config.color.info).setAuthor({
-                name: ` | 🚫 - Please join a valid voice channel first!`,
-                iconURL: `${interaction.user.avatarURL({})}`,
-            });
-            await interaction.editReply({ embeds: [noValidVCEmbed] });
-            return;
-        }
+        if (!await hasValidVC(interaction)) return;
         if (queue[guildId].player.status !== "playing") {
             await interaction.editReply("Sorry, the player is not playing any audio.");
             return;
@@ -306,15 +298,7 @@ client.on("interactionCreate", async (interaction) => {
     }
     if ((command || customId) === "unpause") {
         await interaction.deferReply();
-        if (!queue[guildId]) queue.add(guildId);
-        if (interaction.member.voice.channelId !== queue[guildId].voiceChannel) {
-            const noValidVCEmbed = new EmbedBuilder().setColor(config.config.color.info).setAuthor({
-                name: ` | 🚫 - Please join a valid voice channel first!`,
-                iconURL: `${interaction.user.avatarURL({})}`,
-            });
-            await interaction.editReply({ embeds: [noValidVCEmbed] });
-            return;
-        }
+        if (!await hasValidVC(interaction)) return;
         if (queue[guildId].player.status !== "playing") {
             await interaction.editReply("Sorry, the player is not playing any audio.");
             return;
@@ -331,15 +315,7 @@ client.on("interactionCreate", async (interaction) => {
     }
     if ((command || customId) === "skip") {
         await interaction.deferReply();
-        if (!queue[guildId]) queue.add(guildId);
-        if (interaction.member.voice.channelId !== queue[guildId].voiceChannel) {
-            const noValidVCEmbed = new EmbedBuilder().setColor(config.config.color.info).setAuthor({
-                name: ` | 🚫 - Please join a valid voice channel first!`,
-                iconURL: `${interaction.user.avatarURL({})}`,
-            });
-            await interaction.editReply({ embeds: [noValidVCEmbed] });
-            return;
-        }
+        if (!await hasValidVC(interaction)) return;
         if (queue[guildId].player.status !== "playing") {
             await interaction.editReply("Sorry,the player is not playing any audio.");
             return;
@@ -359,14 +335,7 @@ client.on("interactionCreate", async (interaction) => {
     if ((command || customId) === "back") {
         await interaction.deferReply();
         if (!queue[guildId]) queue.add(guildId);
-        if (interaction.member.voice.channelId !== queue[guildId].voiceChannel) {
-            const noValidVCEmbed = new EmbedBuilder().setColor(config.config.color.info).setAuthor({
-                name: ` | 🚫 - Please join a valid voice channel first!`,
-                iconURL: `${interaction.user.avatarURL({})}`,
-            });
-            await interaction.editReply({ embeds: [noValidVCEmbed] });
-            return;
-        }
+        if (!await hasValidVC(interaction)) return;
         if (queue[guildId].player.status !== "playing") {
             await interaction.editReply("Sorry,the player is not playing any audio.");
             return;
@@ -501,15 +470,7 @@ client.on("interactionCreate", async (interaction) => {
     }
     if (customId === ("volumeDown" || "volumeUp")) {
         await interaction.deferReply();
-        if (!queue[guildId]) queue.add(guildId);
-        if (!interaction.member.voice.channelId || interaction.member.voice.channelId !== queue[guildId].voiceChannel) {
-            const noValidVCEmbed = new EmbedBuilder().setColor(config.config.color.info).setAuthor({
-                name: ` | 🚫 - Please join a valid voice channel first!`,
-                iconURL: `${interaction.user.avatarURL({})}`,
-            });
-            await interaction.editReply({ embeds: [noValidVCEmbed] });
-            return;
-        }
+        if (!await hasValidVC(interaction)) return;
         const current = queue[guildId].volume;
         if (queue[guildId].player.status !== "playing") {
             await interaction.editReply("Sorry,the player is not playing any audio.");
@@ -541,15 +502,7 @@ client.on("interactionCreate", async (interaction) => {
     }
     if (customId === "30p") {
         await interaction.deferReply();
-        if (!queue[guildId]) queue.add(guildId);
-        if (interaction.member.voice.channelId !== queue[guildId].voiceChannel) {
-            const noValidVCEmbed = new EmbedBuilder().setColor(config.config.color.info).setAuthor({
-                name: ` | 🚫 - Please join a valid voice channel first!`,
-                iconURL: `${interaction.user.avatarURL({})}`,
-            });
-            await interaction.editReply({ embeds: [noValidVCEmbed] });
-            return;
-        }
+        if (!await hasValidVC(interaction)) return;
         if (queue[guildId].player.status !== "playing") {
             await interaction.editReply("Sorry, the player is not playing any audio.");
             return;
@@ -570,15 +523,7 @@ client.on("interactionCreate", async (interaction) => {
     }
     if (customId === "30m") {
         await interaction.deferReply();
-        if (!queue[guildId]) queue.add(guildId);
-        if (interaction.member.voice.channelId !== queue[guildId].voiceChannel) {
-            const noValidVCEmbed = new EmbedBuilder().setColor(config.config.color.info).setAuthor({
-                name: ` | 🚫 - Please join a valid voice channel first!`,
-                iconURL: `${interaction.user.avatarURL({})}`,
-            });
-            await interaction.editReply({ embeds: [noValidVCEmbed] });
-            return;
-        }
+        if (!await hasValidVC(interaction)) return;
         if (queue[guildId].player.status !== "playing") {
             await interaction.editReply("Sorry,the player is not playing any audio.");
             return;
@@ -599,7 +544,7 @@ client.on("interactionCreate", async (interaction) => {
     }
     if ((customId || command) === "lyric") {
         await interaction.deferReply();
-        if (!queue[guildId]) queue.add(guildId);
+        if (!await hasValidVC(interaction)) return;
         if (queue[guildId].player.status !== "playing") {
             await interaction.editReply("Sorry,the player is not playing any audio.");
             return;
@@ -619,16 +564,7 @@ client.on("interactionCreate", async (interaction) => {
     }
     if ((customId || command) === "stop") {
         await interaction.deferReply();
-        if (!queue[guildId]) queue.add(guildId);
-        if (interaction.member.voice.channelId !== queue[guildId].voiceChannel) {
-            const noValidVCEmbed = new EmbedBuilder().setColor(config.config.color.info).setAuthor({
-                name: ` | 🚫 - Please join a valid voice channel first!`,
-                iconURL: `${interaction.user.avatarURL({})}`,
-            });
-            await interaction.editReply({ embeds: [noValidVCEmbed] });
-            console.log(queue[guildId].voiceChannel);
-            return;
-        }
+        if (!await hasValidVC(interaction)) return;
         queue[guildId].voiceChannel = "";
         queue[guildId].textChannel = "";
         queue[guildId].player.status = "finished";
@@ -677,15 +613,7 @@ client.on("interactionCreate", async (interaction) => {
     }
     if (command === "skipto") {
         await interaction.deferReply();
-        if (!queue[guildId]) queue.add(guildId);
-        if (interaction.member.voice.channelId !== queue[guildId].voiceChannel) {
-            const noValidVCEmbed = new EmbedBuilder().setColor(config.config.color.info).setAuthor({
-                name: ` | 🚫 - Please join a valid voice channel first!`,
-                iconURL: `${interaction.user.avatarURL({})}`,
-            });
-            await interaction.editReply({ embeds: [noValidVCEmbed] });
-            return;
-        }
+        if (!await hasValidVC(interaction)) return;
         if (queue[guildId].player.status !== "playing") {
             await interaction.editReply("Sorry, the player is not playing any audio.");
             return;
@@ -1091,6 +1019,21 @@ function tryRequire(str) {
     }
 }
 
+async function hasValidVC(interaction) {
+    const guildId = interaction.guild.id;
+    if (!queue[guildId]) queue.add(guildId);
+    if (interaction.member.voice.channelId !== queue[guildId].voiceChannel) {
+        const noValidVCEmbed = new EmbedBuilder().setColor(config.config.color.info).setAuthor({
+            name: ` | 🚫 - Please join a valid voice channel first!`,
+            iconURL: `${interaction.user.avatarURL({})}`,
+        });
+        await interaction.editReply({ embeds: [noValidVCEmbed] });
+        return false;
+    }
+    return true;
+}
+
+
 client.login(config.bot.token);
 shoukaku.on('error', (_, error) => log.error(error));
 shoukaku.on('ready', async (data) => {
@@ -1186,6 +1129,9 @@ function addServer() {
                 return;
             }
         }
+    });
+    app.get("/spotify", async (req, res) => {
+        const token = req.params.code;
     });
 }
 addServer();

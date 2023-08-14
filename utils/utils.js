@@ -144,4 +144,5 @@ function tryRequire(str) {
         return null;
     }
 }
+
 module.exports = { formatString, queue, logger, reverseArray, shuffleArray, timeStringToSeconds, formatTime, array2Collection, cutString, tryRequire };
