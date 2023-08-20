@@ -134,6 +134,9 @@ const commands = [
 			option.setName('position')
 				.setDescription('Target position 1 ~ queue size')
 				.setRequired(true)),
+	new SlashCommandBuilder()
+		.setName('filter')
+		.setDescription('Set filter'),
 ].map(command => command.toJSON());
 const rest = new REST({ version: '10' }).setToken(config.bot.token);
 const reset = [];

@@ -4,7 +4,8 @@
   "description": "The most great discord music bot which provide spreme music experience.",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "bot": "node index.js",
+    "deploy": "node slash.js"
   },
   "keywords": [
     "discord",

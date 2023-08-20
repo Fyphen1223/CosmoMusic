@@ -27,12 +27,7 @@ const client = new discord.Client({
     partials: [discord.Partials.Channel, discord.Partials.GuildMember, discord.Partials.GuildScheduledEvent, discord.Partials.Message, discord.Partials.Reaction, discord.Partials.ThreadMember, discord.Partials.User],
 });
 const { Shoukaku, Connectors } = require('shoukaku');
-const Nodes = [{
-    name: config.lavalink.name,
-    url: `${config.lavalink.host}:${config.lavalink.port}`,
-    auth: config.lavalink.password
-}];
-const shoukaku = new Shoukaku(new Connectors.DiscordJS(client), Nodes);
+const shoukaku = new Shoukaku(new Connectors.DiscordJS(client), config.lavalink);
 const util = require("./utils/utils.js");
 const queue = new util.queue();
 const log = new util.logger();
@@ -151,6 +146,7 @@ client.on("interactionCreate", async (interaction) => {
                 channelId: interaction.member.voice.channelId,
                 shardId: 0
             });
+            queue[guildId].player.status = "finished";
             const joinedEmbed = new EmbedBuilder().setColor(config.config.color.info).setAuthor({
                 name: ` | 👋 - I joined your voice channel.`,
                 iconURL: `${interaction.user.avatarURL({})}`,
@@ -172,6 +168,11 @@ client.on("interactionCreate", async (interaction) => {
             queue[guildId].textChannel = interaction.channel;
             addEventListenerToPlayer(guildId);
         }
+        //^^^^ join command
+        if (queue[guildId].voiceChannel && !query) {
+            await interaction.editReply("Please input keywords");
+            return;
+        }
         if ((queue[guildId].queue.length !== 0) && queue[guildId].player.status === "finished" && !query) {
             if (!queue[guildId].voiceChannel) {
                 queue[guildId].player = await shoukaku.joinVoiceChannel({
@@ -181,7 +182,6 @@ client.on("interactionCreate", async (interaction) => {
                 });
                 queue[guildId].voiceChannel = interaction.member.voice.channelId;
                 queue[guildId].textChannel = interaction.channel;
-                console.log("Hi1");
             }
             await startPlay(guildId);
             await interaction.editReply("Started playing queue");
@@ -354,7 +354,6 @@ client.on("interactionCreate", async (interaction) => {
     }
     if ((command || customId) === "queue" && !interaction.isAutocomplete() || customId === "addR") {
         await interaction.deferReply();
-        const current = queue[guildId].queue[queue[guildId].index].data.info;
         if (!queue[guildId]) queue.add(guildId);
         if (interaction.member.voice.channelId !== queue[guildId].voiceChannel) {
             const noValidVCEmbed = new EmbedBuilder().setColor(config.config.color.info).setAuthor({
@@ -387,6 +386,7 @@ client.on("interactionCreate", async (interaction) => {
                 await interaction.editReply("Nothing to search here.");
                 return;
             } else {
+                const current = queue[guildId].queue[queue[guildId].index].data.info;
                 const res = await node.rest.resolve(`ytsearch:${current.author}`);
                 console.log(res);
                 queue[guildId].add(res.data[0], interaction.user);
@@ -424,6 +424,9 @@ client.on("interactionCreate", async (interaction) => {
             }
             try {
                 queue[guildId]["queue"] = [];
+                queue[guildId].index = 0;
+                queue[guildId].suppressEnd = true;
+                queue[guildId].player.stopTrack();
                 await interaction.editReply("Deleted all music");
             } catch (err) {
                 await interaction.editReply("Cannot delete music");
@@ -464,6 +467,11 @@ client.on("interactionCreate", async (interaction) => {
                 }
                 queue[guildId].remove(index);
                 await interaction.editReply(`Deleted ${query} from the queue.`);
+                if (queue[guildId].queue.length === 0) {
+                    queue[guildId].index = 0;
+                    queue[guildId].suppressEnd = true;
+                    queue[guildId].player.stopTrack();
+                }
                 return;
             }
         }
@@ -632,6 +640,22 @@ client.on("interactionCreate", async (interaction) => {
     }
     if (command === "config") {
 
+    }
+    if (command === "filter") {
+        await interaction.deferReply();
+        if (!await hasValidVC(interaction)) return;
+        if (queue[guildId].player.status !== "playing") {
+            await interaction.editReply("Player is not playing any song.");
+            return;
+        }
+        const filter = {
+            'tremolo': {
+                'frequency': 5.0,
+                'depth': 0.5
+            }
+        };
+        queue[guildId].player.setFilters(filter);
+        await interaction.editReply("Set vibrato filter");
     }
 });
 
@@ -852,6 +876,7 @@ function addEventListenerToPlayer(guildId) {
     });
     queue[guildId].player.on("end", async function (s) {
         const index = queue[guildId].index + 1;
+        queue[guildId].status = "finished";
         if (queue[guildId].suppressEnd) return;
         if (index === queue[guildId].queue.length) {
             if (queue[guildId].autoReplay) {
@@ -859,7 +884,6 @@ function addEventListenerToPlayer(guildId) {
                 return;
             } else {
                 await queue[guildId].textChannel.send("Finished playing queue.");
-                queue[guildId].player.status = "finished";
                 return;
             }
         } else {
