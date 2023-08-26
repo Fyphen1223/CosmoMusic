@@ -157,6 +157,8 @@ client.on("interactionCreate", async (interaction) => {
             addEventListenerToPlayer(guildId);
             return;
         }
+        //Join channel first or after stop command
+        
         if (!queue[guildId].voiceChannel && query) {
             queue[guildId].player = await shoukaku.joinVoiceChannel({
                 guildId: guildId,
@@ -168,11 +170,14 @@ client.on("interactionCreate", async (interaction) => {
             queue[guildId].textChannel = interaction.channel;
             addEventListenerToPlayer(guildId);
         }
-        //^^^^ join command
+        //Join and there is valid query
+        
         if (queue[guildId].voiceChannel && !query) {
             await interaction.editReply("Please input keywords");
             return;
         }
+        //Already joined and no query
+        
         if ((queue[guildId].queue.length !== 0) && queue[guildId].player.status === "finished" && !query) {
             if (!queue[guildId].voiceChannel) {
                 queue[guildId].player = await shoukaku.joinVoiceChannel({
@@ -187,6 +192,8 @@ client.on("interactionCreate", async (interaction) => {
             await interaction.editReply("Started playing queue");
             return;
         }
+        //Valid queue and player has been finished and there is no query
+        
         if ((queue[guildId].queue.length !== 0) && queue[guildId].player.status === "finished" && query) {
             if (!queue[guildId].voiceChannel) {
                 queue[guildId].player = await shoukaku.joinVoiceChannel({
@@ -198,10 +205,14 @@ client.on("interactionCreate", async (interaction) => {
                 queue[guildId].textChannel = interaction.channel;
             }
         }
+        //Valid queue and player has been finished and there is query
+        
         if (interaction.member.voice.channelId !== queue[guildId].voiceChannel) {
             await interaction.editReply("Please join my VC!");
             return;
         }
+        //User did not join same voice channel as bot
+        
         if (!interaction.options.getBoolean("autoreplay")) {
             queue[guildId].autoReplay = false;
         } else {
