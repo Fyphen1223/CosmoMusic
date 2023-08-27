@@ -19,3 +19,5 @@
    JDK: 300MB
    
    CPU: 6%~15% with Core i7-7500U
+
+   55 Music in queue
