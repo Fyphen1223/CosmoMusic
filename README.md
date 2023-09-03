@@ -8,3 +8,16 @@
 
 ## Queue System Architecture
  Using JSON as queue. Declared in ./utils/utils.js
+
+# Benchmark
+ Playing in 1 server without filter:
+  
+  RAM:
+  
+   Node.js Runtime: 40MB
+   
+   JDK: 300MB
+   
+   CPU: 6%~15% with Core i7-7500U
+
+   55 Music in queue
