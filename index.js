@@ -31,6 +31,7 @@ const shoukaku = new Shoukaku(new Connectors.DiscordJS(client), config.lavalink)
 const util = require("./utils/utils.js");
 const queue = new util.queue();
 const log = new util.logger();
+const embeds = require('./utils/embeds.js');
 var playlist = tryRequire("./db/playlist.json");
 const fs = require("fs");
 const Genius = require("genius-lyrics");
@@ -79,20 +80,15 @@ client.on("interactionCreate", async (interaction) => {
     const guildId = interaction.guild.id;
     if (interaction.commandName === "queue" && interaction.options.getSubcommand() === "delete") {
         const focusedValue = interaction.options.getFocused();
-        let list = [];
-        let i = 0;
-        while (i !== queue[guildId].queue.length) {
-            list.push(queue[guildId].queue[i].data.info.title);
-            i++;
-        }
-        const filtered = list.filter((choice) => choice.startsWith(focusedValue));
+        let list = queue[guildId].getTitles();
+        let filtered = list.filter((choice) => choice.startsWith(focusedValue));
+        filtered = filtered.splice(0, 24);
         try {
             interaction.respond(filtered.map((choice) => ({ name: choice, value: choice })));
         } catch (err) {
-            const rated = audio[interaction.guild.id.toString()]["queue"].slice(0, 24);
-            const rateFilt = rated.filter((choice) => choice.startsWith(focusedValue));
-            interaction.respond(rateFilt.map((choice) => ({ name: choice, value: choice })));
+            return;
         }
+        return;
     }
     if (interaction.commandName === "radio" && interaction.options.getSubcommand() === "play") {
         const focusedValue = interaction.options.getFocused();
@@ -108,16 +104,61 @@ client.on("interactionCreate", async (interaction) => {
     if (interaction.commandName === "play") {
         const focusedValue = interaction.options.getFocused();
         const node = await shoukaku.getIdealNode();
-        const res = await node.rest.resolve(`ytsearch:${focusedValue}`);
-        const list = [];
-        let i = 0;
-        while (i < 5) {
+        const result = await node.rest.resolve(`${focusedValue}`);
+        if (result.loadType == "empty") {
             try {
-                list.push(`${res.data[i].info.title}`);
-            } catch (err) { }
-            i++;
+                const searchResult = await node.rest.resolve(`ytsearch:${focusedValue}`);
+                if (!searchResult?.data.length) return;
+                let list = [];
+                let i = 0;
+                while (i < 20) {
+                    try {
+                        list.push(`${searchResult.data[i].info.title}`);
+                    } catch (err) {
+                        return;
+                    }
+                    i++;
+                }
+                await interaction.respond(list.map((choice) => ({ name: choice, value: choice })));
+            } catch (err) {
+                return;
+            }
         }
-        await interaction.respond(list.map((choice) => ({ name: choice, value: choice })));
+        if (result.loadType == "track") {
+            const list = [result.data.info.title];
+            await interaction.respond(list.map((choice) => ({ name: choice, value: choice })));
+            return;
+        }
+        if (result.loadType == "playlist") {
+            let i = 0;
+            let list = [];
+            while ((i !== result.data.tracks.length) && i <= 24) {
+                list.push(result.data.tracks[i].info.title);
+                i++;
+            }
+            await interaction.respond(list.map((choice) => ({ name: choice, value: choice })));
+            return;
+        }
+        if (result.loadType === "search") {
+            if (!result?.data.length) return;
+            let list = [];
+            let i = 0;
+            while (i < 5) {
+                try {
+                    list.push(`${result.data[i].info.title}`);
+                } catch (err) {
+                    return;
+                }
+                i++;
+            }
+            await interaction.respond(list.map((choice) => ({ name: choice, value: choice })));
+            return;
+        }
+        if (result.loadType === "error") {
+            console.log("An expected error has occured.");
+            return;
+        }
+
     }
 });
 client.on("interactionCreate", async (interaction) => {
@@ -139,8 +180,13 @@ client.on("interactionCreate", async (interaction) => {
         if (!queue[guildId].node) queue[guildId].node = await shoukaku.getIdealNode();
         const query = interaction.options.getString("query");
         const replay = interaction.options.getBoolean("autoreplay");
+        if (replay) {
+            queue[guildId].autoReplay = true;
+        } else {
+            queue[guildId].autoReplay = false;
+        }
         const node = queue[guildId].node;
-        if (!queue[guildId].voiceChannel && !query && queue[guildId].queue.length === 0) {
+        if (!queue[guildId].voiceChannel && !query && queue[guildId].isEmpty()) {
             queue[guildId].player = await shoukaku.joinVoiceChannel({
                 guildId: guildId,
                 channelId: interaction.member.voice.channelId,
@@ -158,7 +204,7 @@ client.on("interactionCreate", async (interaction) => {
             return;
         }
         //Join channel first or after stop command
-        
+
         if (!queue[guildId].voiceChannel && query) {
             queue[guildId].player = await shoukaku.joinVoiceChannel({
                 guildId: guildId,
@@ -171,13 +217,18 @@ client.on("interactionCreate", async (interaction) => {
             addEventListenerToPlayer(guildId);
         }
         //Join and there is valid query
-        
+
+        if (queue[guildId].voiceChannel && !query && queue[guildId].player.status === "finished") {
+            await startPlay(guildId);
+            await interaction.editReply("Started playing queue");
+            return;
+        }
         if (queue[guildId].voiceChannel && !query) {
             await interaction.editReply("Please input keywords");
             return;
         }
         //Already joined and no query
-        
+
         if ((queue[guildId].queue.length !== 0) && queue[guildId].player.status === "finished" && !query) {
             if (!queue[guildId].voiceChannel) {
                 queue[guildId].player = await shoukaku.joinVoiceChannel({
@@ -193,7 +244,7 @@ client.on("interactionCreate", async (interaction) => {
             return;
         }
         //Valid queue and player has been finished and there is no query
-        
+
         if ((queue[guildId].queue.length !== 0) && queue[guildId].player.status === "finished" && query) {
             if (!queue[guildId].voiceChannel) {
                 queue[guildId].player = await shoukaku.joinVoiceChannel({
@@ -206,13 +257,13 @@ client.on("interactionCreate", async (interaction) => {
             }
         }
         //Valid queue and player has been finished and there is query
-        
+
         if (interaction.member.voice.channelId !== queue[guildId].voiceChannel) {
             await interaction.editReply("Please join my VC!");
             return;
         }
         //User did not join same voice channel as bot
-        
+
         if (!interaction.options.getBoolean("autoreplay")) {
             queue[guildId].autoReplay = false;
         } else {
@@ -460,12 +511,7 @@ client.on("interactionCreate", async (interaction) => {
             return;
         }
         if (interaction.options.getSubcommand() === "delete") {
-            let list = [];
-            let i = 0;
-            while (i !== queue[guildId].queue.length) {
-                list.push(queue[guildId].queue[i].data.info.title);
-                i++;
-            }
+            let list = queue[guildId].getTitles();
             const query = interaction.options.getString("query");
             const index = list.indexOf(query);
             if (index === -1) {
@@ -478,7 +524,7 @@ client.on("interactionCreate", async (interaction) => {
                 }
                 queue[guildId].remove(index);
                 await interaction.editReply(`Deleted ${query} from the queue.`);
-                if (queue[guildId].queue.length === 0) {
+                if (queue[guildId].isEmpty()) {
                     queue[guildId].index = 0;
                     queue[guildId].suppressEnd = true;
                     queue[guildId].player.stopTrack();
@@ -650,7 +696,18 @@ client.on("interactionCreate", async (interaction) => {
         return;
     }
     if (command === "config") {
-
+        await interaction.deferReply();
+        if (!await hasValidVC(interaction)) return;
+        if (interaction.options.getSubcommand() === "autoreplay") {
+            if (interaction.options.getBoolean("autoreplay")) {
+                queue[guildId].autoReplay = true;
+                await interaction.editReply("From now on, the queue will be automatically replayed when it has finished.");
+            } else {
+                queue[guildId].autoReplay = false;
+                await interaction.editReply("From now on, the queue will not be automatically replayed when it has finished.");
+            }
+        }
+        return;
     }
     if (command === "filter") {
         await interaction.deferReply();
@@ -682,38 +739,8 @@ function addEventListenerToPlayer(guildId) {
         queue[guildId].player.status = "playing";
         queue[guildId].player.setFilterVolume(queue[guildId].volume / 100);
         queue[guildId].suppressEnd = false;
-        const current = queue[guildId].queue[queue[guildId].index].data.info;
-        const embed = new EmbedBuilder()
-            .setColor(config.config.color.info)
-            .addFields(
-                {
-                    name: "Author",
-                    value: current.author,
-                    inline: true,
-                },
-                { name: "Title", value: current.title, inline: true },
-                {
-                    name: "Duration",
-                    value: `${util.formatTime(Math.floor(queue[guildId].player.position / 1000))}/${util.formatTime(Math.floor(current.length / 1000))}`,
-                    inline: true,
-                },
-                {
-                    name: "Requested by",
-                    value: `${queue[guildId].queue[queue[guildId].index].user}`,
-                    inline: true,
-                },
-                {
-                    name: "Volume",
-                    value: `${queue[guildId].volume}%`,
-                    inline: true,
-                },
-                {
-                    name: "Position",
-                    value: `${queue[guildId].index + 1}/${queue[guildId].queue.length}`,
-                    inline: true,
-                }
-            )
-            .setImage(current.artworkUrl);
+        queue[guildId].player.position = 0;
+        const embed = embeds.generateStartEmbed(queue, guildId, 0, config);
         const btn = new ActionRowBuilder().addComponents(
             new ButtonBuilder().setCustomId("pause").setLabel("Pause").setEmoji("1117306256781230191").setStyle(ButtonStyle.Secondary),
             new ButtonBuilder().setCustomId("stop").setLabel("Stop").setEmoji("1100927733116186694").setStyle(ButtonStyle.Danger),
@@ -750,38 +777,7 @@ function addEventListenerToPlayer(guildId) {
         queue[guildId].panel = msg;
     });
     queue[guildId].player.on("resumed", async function (s) {
-        const current = queue[guildId].queue[queue[guildId].index].data.info;
-        const embed = new EmbedBuilder()
-            .setColor(config.config.color.info)
-            .addFields(
-                {
-                    name: "Author",
-                    value: current.author,
-                    inline: true,
-                },
-                { name: "Title", value: current.title, inline: true },
-                {
-                    name: "Duration",
-                    value: `${util.formatTime(Math.floor(queue[guildId].player.position / 1000))}/${util.formatTime(Math.floor(current.length / 1000))}`,
-                    inline: true,
-                },
-                {
-                    name: "Requested by",
-                    value: `${queue[guildId].queue[queue[guildId].index].user}`,
-                    inline: true,
-                },
-                {
-                    name: "Volume",
-                    value: `${queue[guildId].volume}% `,
-                    inline: true,
-                },
-                {
-                    name: "Position",
-                    value: `${queue[guildId].index + 1} / ${queue[guildId].queue.length}`,
-                    inline: true,
-                }
-            )
-            .setImage(current.artworkUrl);
+        const embed = embeds.generateUnpauseEmbed(queue, guildId, 0, config);
         const btn = new ActionRowBuilder().addComponents(
             new ButtonBuilder().setCustomId("pause").setLabel("Pause").setEmoji("1117306256781230191").setStyle(ButtonStyle.Secondary),
             new ButtonBuilder().setCustomId("stop").setLabel("Stop").setEmoji("1100927733116186694").setStyle(ButtonStyle.Danger),
@@ -818,38 +814,7 @@ function addEventListenerToPlayer(guildId) {
         queue[guildId].panel = msg;
     });
     queue[guildId].player.on("paused", async function (s) {
-        const current = queue[guildId].queue[queue[guildId].index].data.info;
-        const embed = new EmbedBuilder()
-            .setColor(config.config.color.info)
-            .addFields(
-                {
-                    name: "Author",
-                    value: current.author,
-                    inline: true,
-                },
-                { name: "Title", value: current.title, inline: true },
-                {
-                    name: "Duration",
-                    value: `${util.formatTime(Math.floor(queue[guildId].player.position / 1000))} / ${util.formatTime(Math.floor(current.length / 1000))}`,
-                    inline: true,
-                },
-                {
-                    name: "Requested by",
-                    value: `${queue[guildId].queue[queue[guildId].index].user}`,
-                    inline: true,
-                },
-                {
-                    name: "Volume",
-                    value: `${queue[guildId].volume} % `,
-                    inline: true,
-                },
-                {
-                    name: "Position",
-                    value: `${queue[guildId].index + 1} / ${queue[guildId].queue.length}`,
-                    inline: true,
-                }
-            )
-            .setImage(current.artworkUrl);
+        const embed = embeds.generatePauseEmbed(queue, guildId, 0, config);
         const btn = new ActionRowBuilder().addComponents(
             new ButtonBuilder().setCustomId("unpause").setLabel("Resume").setEmoji("1117306258077257791").setStyle(ButtonStyle.Secondary),
             new ButtonBuilder().setCustomId("stop").setLabel("Stop").setEmoji("1100927733116186694").setStyle(ButtonStyle.Danger),
@@ -887,7 +852,7 @@ function addEventListenerToPlayer(guildId) {
     });
     queue[guildId].player.on("end", async function (s) {
         const index = queue[guildId].index + 1;
-        queue[guildId].status = "finished";
+        queue[guildId].player.status = "finished";
         if (queue[guildId].suppressEnd) return;
         if (index === queue[guildId].queue.length) {
             if (queue[guildId].autoReplay) {
@@ -904,40 +869,8 @@ function addEventListenerToPlayer(guildId) {
         }
     });
 }
-
 async function eventOnPaused(guildId) {
-    const current = queue[guildId].queue[queue[guildId].index].data.info;
-    const embed = new EmbedBuilder()
-        .setColor(config.config.color.info)
-        .addFields(
-            {
-                name: "Author",
-                value: current.author,
-                inline: true,
-            },
-            { name: "Title", value: current.title, inline: true },
-            {
-                name: "Duration",
-                value: `${util.formatTime(Math.floor(queue[guildId].player.position / 1000))} / ${util.formatTime(Math.floor(current.length / 1000))}`,
-                inline: true,
-            },
-            {
-                name: "Requested by",
-                value: `${queue[guildId].queue[queue[guildId].index].user}`,
-                inline: true,
-            },
-            {
-                name: "Volume",
-                value: `${queue[guildId].volume} % `,
-                inline: true,
-            },
-            {
-                name: "Position",
-                value: `${queue[guildId].index + 1} / ${queue[guildId].queue.length}`,
-                inline: true,
-            }
-        )
-        .setImage(current.artworkUrl);
+    const embed = embeds.generatePauseEmbed(queue, guildId, 0, config);
     const btn = new ActionRowBuilder().addComponents(
         new ButtonBuilder().setCustomId("unpause").setLabel("Resume").setEmoji("1117306258077257791").setStyle(ButtonStyle.Secondary),
         new ButtonBuilder().setCustomId("stop").setLabel("Stop").setEmoji("1100927733116186694").setStyle(ButtonStyle.Danger),
@@ -974,38 +907,7 @@ async function eventOnPaused(guildId) {
     queue[guildId].panel = msg;
 }
 async function eventOnResumed(guildId) {
-    const current = queue[guildId].queue[queue[guildId].index].data.info;
-    const embed = new EmbedBuilder()
-        .setColor(config.config.color.info)
-        .addFields(
-            {
-                name: "Author",
-                value: current.author,
-                inline: true,
-            },
-            { name: "Title", value: current.title, inline: true },
-            {
-                name: "Duration",
-                value: `${util.formatTime(Math.floor(queue[guildId].player.position / 1000))} / ${util.formatTime(Math.floor(current.length / 1000))}`,
-                inline: true,
-            },
-            {
-                name: "Requested by",
-                value: `${queue[guildId].queue[queue[guildId].index].user}`,
-                inline: true,
-            },
-            {
-                name: "Volume",
-                value: `${queue[guildId].volume} % `,
-                inline: true,
-            },
-            {
-                name: "Position",
-                value: `${queue[guildId].index + 1} / ${queue[guildId].queue.length}`,
-                inline: true,
-            }
-        )
-        .setImage(current.artworkUrl);
+    const embed = embeds.generateUnpauseEmbed(queue, guildId, 0, config);
     const btn = new ActionRowBuilder().addComponents(
         new ButtonBuilder().setCustomId("pause").setLabel("Pause").setEmoji("1117306256781230191").setStyle(ButtonStyle.Secondary),
         new ButtonBuilder().setCustomId("stop").setLabel("Stop").setEmoji("1100927733116186694").setStyle(ButtonStyle.Danger),
@@ -1042,7 +944,6 @@ async function eventOnResumed(guildId) {
     queue[guildId].panel = msg;
 
 }
-
 function tryRequire(str) {
     let res = null;
     try {
@@ -1053,7 +954,6 @@ function tryRequire(str) {
         return null;
     }
 }
-
 async function hasValidVC(interaction) {
     const guildId = interaction.guild.id;
     if (!queue[guildId]) queue.add(guildId);
@@ -1067,7 +967,6 @@ async function hasValidVC(interaction) {
     }
     return true;
 }
-
 
 client.login(config.bot.token);
 shoukaku.on('error', (_, error) => log.error(error));

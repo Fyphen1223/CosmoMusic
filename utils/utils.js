@@ -32,6 +32,22 @@ class guildQueue {
         this.queue.splice(index, 1);
         return;
     }
+    isEmpty() {
+        if (this.queue.length === 0) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+    getTitles() {
+        let i = 0;
+        let result = [];
+        while ((i + 1) <= this.queue.length) {
+            result.push(this.queue[i].data.info.title);
+            i++;
+        }
+        return result;
+    }
 }
 
 class logger {
