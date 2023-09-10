@@ -3,7 +3,7 @@ const config = require("./config.json");
 if (config.config.console.consoleClear) console.clear();
 console.log("🏁 - \x1b[34mReady... Please wait, now loading packages... (Step 1/4)\x1b[39m");
 const discord = require("discord.js");
-const { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder } = require("discord.js");
+const { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, PermissionsBitField } = require("discord.js");
 const client = new discord.Client({
     intents: [
         discord.GatewayIntentBits.DirectMessageReactions,
@@ -27,7 +27,18 @@ const client = new discord.Client({
     partials: [discord.Partials.Channel, discord.Partials.GuildMember, discord.Partials.GuildScheduledEvent, discord.Partials.Message, discord.Partials.Reaction, discord.Partials.ThreadMember, discord.Partials.User],
 });
 const { Shoukaku, Connectors } = require('shoukaku');
-const shoukaku = new Shoukaku(new Connectors.DiscordJS(client), config.lavalink);
+const shoukakuOptions = {
+    "resume": true,
+    "resumeTimeout": 0,
+    "resumeByLibrary": true,
+    "reconnectTries": 3,
+    "reconnectInterval": 3,
+    "restTimeout": 5,
+    "moveOnDisconnect": true,
+    "userAgent": "Cosmo Music/v0.0.1",
+    "voiceConnectionTimeout": 3
+};
+const shoukaku = new Shoukaku(new Connectors.DiscordJS(client), config.lavalink, shoukakuOptions);
 const util = require("./utils/utils.js");
 const queue = new util.queue();
 const log = new util.logger();
@@ -185,6 +196,19 @@ client.on("interactionCreate", async (interaction) => {
         } else {
             queue[guildId].autoReplay = false;
         }
+        const me = await interaction.guild.members.me;
+        const voiceChannel = interaction.member.voice.channel;
+        const permission = voiceChannel.permissionsFor(me);
+        if (!permission.has(PermissionsBitField.Flags.Connect)) {
+            await interaction.editReply("I do not have enough permission!");
+            return;
+        }
+        if (!permission.has(PermissionsBitField.Flags.Speak)) {
+            await interaction.editReply("I do not have enough permission!");
+            return;
+        }
+
+
         const node = queue[guildId].node;
         if (!queue[guildId].voiceChannel && !query && queue[guildId].isEmpty()) {
             queue[guildId].player = await shoukaku.joinVoiceChannel({
@@ -206,11 +230,17 @@ client.on("interactionCreate", async (interaction) => {
         //Join channel first or after stop command
 
         if (!queue[guildId].voiceChannel && query) {
-            queue[guildId].player = await shoukaku.joinVoiceChannel({
-                guildId: guildId,
-                channelId: interaction.member.voice.channelId,
-                shardId: 0
-            });
+            try {
+                queue[guildId].player = await shoukaku.joinVoiceChannel({
+                    guildId: guildId,
+                    channelId: interaction.member.voice.channelId,
+                    shardId: 0
+                });
+            } catch (err) {
+                queue[guildId].player = null;
+                await interaction.editReply("Sorry, I cannot join your channel. Check my permissions.");
+                return;
+            }
             queue[guildId].player.status = "finished";
             queue[guildId].voiceChannel = interaction.member.voice.channelId;
             queue[guildId].textChannel = interaction.channel;
@@ -231,11 +261,17 @@ client.on("interactionCreate", async (interaction) => {
 
         if ((queue[guildId].queue.length !== 0) && queue[guildId].player.status === "finished" && !query) {
             if (!queue[guildId].voiceChannel) {
-                queue[guildId].player = await shoukaku.joinVoiceChannel({
-                    guildId: guildId,
-                    channelId: interaction.member.voice.channelId,
-                    shardId: 0
-                });
+                try {
+                    queue[guildId].player = await shoukaku.joinVoiceChannel({
+                        guildId: guildId,
+                        channelId: interaction.member.voice.channelId,
+                        shardId: 0
+                    });
+                } catch (err) {
+                    queue[guildId].player = null;
+                    await interaction.editReply("Sorry, I cannot join the voice channel. Please check my permissions.");
+                    return;
+                }
                 queue[guildId].voiceChannel = interaction.member.voice.channelId;
                 queue[guildId].textChannel = interaction.channel;
             }
@@ -247,11 +283,17 @@ client.on("interactionCreate", async (interaction) => {
 
         if ((queue[guildId].queue.length !== 0) && queue[guildId].player.status === "finished" && query) {
             if (!queue[guildId].voiceChannel) {
-                queue[guildId].player = await shoukaku.joinVoiceChannel({
-                    guildId: guildId,
-                    channelId: interaction.member.voice.channelId,
-                    shardId: 0
-                });
+                try {
+                    queue[guildId].player = await shoukaku.joinVoiceChannel({
+                        guildId: guildId,
+                        channelId: interaction.member.voice.channelId,
+                        shardId: 0
+                    });
+                } catch (err) {
+                    queue[guildId].player = null;
+                    await interaction.editReply("Sorry, I cannot join the voice channel. Please check my permissions.");
+                    return;
+                }
                 queue[guildId].voiceChannel = interaction.member.voice.channelId;
                 queue[guildId].textChannel = interaction.channel;
             }
@@ -319,14 +361,7 @@ client.on("interactionCreate", async (interaction) => {
     if (command === "seek") {
         await interaction.deferReply();
         if (!queue[guildId]) queue.add(guildId);
-        if (interaction.member.voice.channelId !== queue[guildId].voiceChannel) {
-            const noValidVCEmbed = new EmbedBuilder().setColor(config.config.color.info).setAuthor({
-                name: ` | 🚫 - Please join a valid voice channel first!`,
-                iconURL: `${interaction.user.avatarURL({})}`,
-            });
-            await interaction.editReply({ embeds: [noValidVCEmbed] });
-            return;
-        }
+        if (!await hasValidVC(interaction)) return;
         if (queue[guildId].player.status !== "playing") {
             await interaction.editReply("Sorry, the player is not playing any audio.");
             return;
@@ -337,6 +372,11 @@ client.on("interactionCreate", async (interaction) => {
         }
         const seek = interaction.options.getString("seek");
         const position = util.timeStringToSeconds(seek);
+        const length = queue[guildId].queue[queue[guildId].index].data.info.length;
+        if ((length < position * 1000) || position < 1) {
+            await interaction.editReply("Sorry, the input was invalid.");
+            return;
+        }
         await queue[guildId].player.seekTo(position * 1000);
         await interaction.editReply(`Seeked to ${seek}`);
         return;
@@ -983,6 +1023,7 @@ process.on('uncaughtException', (err) => {
 server.listen(config.config.adminPort, () => {
     log.ready(`Server started on ${config.config.adminPort}`);
     log.info("If you want to change port number, please edit config.json");
+    return;
 });
 if (app.get("env") === "production") {
     app.set("trust proxy", 1);

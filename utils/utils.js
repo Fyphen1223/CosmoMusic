@@ -56,7 +56,7 @@ class logger {
         return;
     }
     warn(content) {
-        console.log(`\x1b[41m[WARN]\x1b[39m : ${content}`);
+        console.log(`\x1b[41m[WARN ]\x1b[39m : ${content}`);
         return;
     }
     ready(content) {
@@ -64,7 +64,7 @@ class logger {
         return;
     }
     info(content) {
-        console.log(`\x1b[34m[INFO]\x1b[39m : ${content}`);
+        console.log(`\x1b[34m[INFO ]\x1b[39m : ${content}`);
         return;
     }
 }
