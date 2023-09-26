@@ -4,7 +4,9 @@
  
  Using [Lavalink](https://github.com/lavalink-devs/lavalink) v4 and [Shoukaku](https://github.com/Deivu/Shoukaku) Client.
 
-# 🖥️ Install on your device 
+ You can invite the public instance (a.k.a the bot which is runnign in my PC) [here](https://discord.com/api/oauth2/authorize?client_id=1132870841886060637&permissions=8&scope=bot%20applications.commands) , but the bot's uptime is terrbily bad.
+ 
+# 🖥️ Install on your device
 
  Clone this [repository](https://github.com/Fyphen1223/CosmoMusic) somehow. For example, you can simply do this command: 
  
@@ -23,6 +25,41 @@
 
  You can get genius lyric api's api key with [here](https://genius.com/developers) 
 
+ When finished editing config, you will basically be ready to boot up your bot.
+
+ However, before that, you have to register slash commands.
+
+ Please type 
+ ```
+ node slash.js
+ ```
+
+ to register this bot's slash commands to the Discord server.
+
+ If that's done, then simply type
+ 
+ ```
+ node index.js
+ ```
+
+ in "CosmoMusic" folder, and you also have to start Lavalink server as well (or just use public server).
+
+ To start the server, you have to do these:
+
+ ```
+ cd Lavalink
+ ```
+
+ and 
+
+ ```
+ java -jar Lavalink.jar
+ ```
+
+ When the console shows "Lavalink is ready to accept connection", your bot will connect to the Lavalink server, and that's done!
+
+ Enjoy the highquality music bot!
+ 
 # 🧰 Feature
  
  -✅Play music from YouTube, SoundCloud, Spotify, YouTube Music, Deezer, Apple Music, and etc...
