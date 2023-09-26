@@ -78,7 +78,8 @@
 
 # ToDo
  
- -Music recommendations with Spotify API
+ []Music recommendations with Spotify API
+ [x]Music recommendations with YouTube music search
 
 # Internal architecture
  
