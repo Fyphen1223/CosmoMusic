@@ -5,6 +5,14 @@
  Using [Lavalink](https://github.com/lavalink-devs/lavalink) v4 and [Shoukaku](https://github.com/Deivu/Shoukaku) Client.
 
  You can invite the public instance (a.k.a the bot which is running in my PC) [here](https://discord.com/api/oauth2/authorize?client_id=1132870841886060637&permissions=8&scope=bot%20applications.commands) , but the bot's uptime is terrbily bad.
+
+ For license, see [./LICENSE]
+
+ For security policy, see [./SECURITY.md]
+
+ For code of conduct, see [./CODE_OF_CONDUCT.md]
+
+ If you want to contribute, see [./CONTRIBUTING.md]
  
 # 🖥️ Install on your device
 
