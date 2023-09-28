@@ -6,13 +6,13 @@
 
  You can invite the public instance (a.k.a the bot which is running in my PC) [here](https://discord.com/api/oauth2/authorize?client_id=1132870841886060637&permissions=8&scope=bot%20applications.commands) , but the bot's uptime is terrbily bad.
 
- For license, see [./LICENSE]
+ For license, see [./LICENSE](./LICENSE)
 
- For security policy, see [./SECURITY.md]
+ For security policy, see [./SECURITY.md](./SECURITY.md)
 
- For code of conduct, see [./CODE_OF_CONDUCT.md]
+ For code of conduct, see [./CODE_OF_CONDUCT.md](./CODE_OF_CONDUCT.md)
 
- If you want to contribute, see [./CONTRIBUTING.md]
+ If you want to contribute, see [./CONTRIBUTING.md](./CONTRIBUTING.md)
  
 # 🖥️ Install on your device
 
