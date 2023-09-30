@@ -20,7 +20,7 @@
  npm i 
  ```
  次に、config.jsonを作る必要があります。これはこのBotの重要なコアコンフィグになります。
- [./config.json.example](./config.json.example)で実例を確認してください. 
+ [./config.json.example](../config.json.example)で実例を確認してください. 
 
  [ここ](https://genius.com/developers)でGenius Lyrics APIのAPIキーを入手できます。 
 
@@ -82,7 +82,7 @@
 
 ## キューシステムの構造
  
- JSONをキューとして使用しています。 [./utils/utils.js](./utils/utils.js)で宣言されています。
+ JSONをキューとして使用しています。 [../utils/utils.js](../utils/utils.js)で宣言されています。
 
 # Benchmark
  
