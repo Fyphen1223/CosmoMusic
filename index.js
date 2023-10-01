@@ -52,10 +52,24 @@ const https = require("https");
 const express = require("express");
 const session = require("express-session");
 const bodyParser = require("body-parser");
+const cookieParser = require("cookie-parser");
+const csrf = require('lusca').csrf;
 const socketio = require("socket.io");
 const app = express();
+app.set("trust proxy", 1);
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(csrf());
+app.use(cookieParser());
+const RateLimit = require('express-rate-limit');
+var limiter = RateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 100, // max 100 requests per windowMs
+});
+app.use(limiter);
+
+sess.cookie.secure = true;
 const sess = {
-    secret: "secretsecretsecret",
+    secret: config.config.dashboard.cookieSecret,
     cookie: {
         maxAge: 600000,
     },
@@ -1025,10 +1039,7 @@ server.listen(config.config.adminPort, () => {
     log.info("If you want to change port number, please edit config.json");
     return;
 });
-if (app.get("env") === "production") {
-    app.set("trust proxy", 1);
-    sess.cookie.secure = true;
-}
+
 function addServer() {
     app.use(session(sess));
     app.use(bodyParser.urlencoded({ extended: true }));
