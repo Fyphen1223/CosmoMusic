@@ -56,7 +56,6 @@ const cookieParser = require("cookie-parser");
 const csrf = require('lusca').csrf;
 const socketio = require("socket.io");
 const app = express();
-app.set("trust proxy", 1);
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(csrf());
 app.use(cookieParser());
@@ -66,16 +65,18 @@ var limiter = RateLimit({
     max: 100, // max 100 requests per windowMs
 });
 app.use(limiter);
-
 sess.cookie.secure = true;
 const sess = {
     secret: config.config.dashboard.cookieSecret,
     cookie: {
         maxAge: 600000,
+        secure: true,
+        httpOnly: true,
     },
     resave: false,
     saveUninitialized: false,
 };
+app.use(session(sess));
 const server = https.createServer(
     {
         key: fs.readFileSync("./ssl/privatekey.pem"),
@@ -1041,8 +1042,6 @@ server.listen(config.config.adminPort, () => {
 });
 
 function addServer() {
-    app.use(session(sess));
-    app.use(bodyParser.urlencoded({ extended: true }));
     app.get("/login", async (req, res) => {
         res.set("Content-Type", "text/html");
         res.send(fs.readFileSync("./web/login.html"));
