@@ -97,6 +97,13 @@ const commands = [
 						.setDescription(`Enable or disable your guild's auto-replay`)
 						.setRequired(true)))
 		.addSubcommand(subcommand =>
+			subcommand.setName('autoplay')
+				.setDescription(`Enable or disable your guild's auto-play`)
+				.addBooleanOption(option =>
+					option.setName('autoplay')
+						.setDescription(`Enable or disable your guild's auto-play`)
+						.setRequired(true)))
+		.addSubcommand(subcommand =>
 			subcommand.setName('searchengine')
 				.setDescription(`Change your guild's default search enginge.`)
 				.addBooleanOption(option =>

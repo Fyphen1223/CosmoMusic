@@ -19,7 +19,9 @@ class guildQueue {
     index = 0;
     suppressEnd = false;
     autoReplay = true;
+    autoPlay = false;
     volume = 100;
+    previous = null;
     add(data, user) {
         let temp = {
             user: user,
