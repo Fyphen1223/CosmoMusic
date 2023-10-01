@@ -32,7 +32,7 @@ const shoukakuOptions = {
     "resumeTimeout": 0,
     "resumeByLibrary": true,
     "reconnectTries": 3,
-    "reconnectInterval": 3,
+    "reconnectInterval": 5,
     "restTimeout": 5,
     "moveOnDisconnect": true,
     "userAgent": "Cosmo Music/v0.0.1",

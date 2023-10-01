@@ -1,0 +1,34 @@
+{
+    "bot": {
+        "token": "your token",
+        "applicationId": "your application id",
+        "clientSecret": "your client secret"
+    },
+    "spotify": {
+        "clientId": "your spotify credential",
+        "clientSecret": "your spotify credential"
+    },
+    "token": {
+        "genius": "genius lyric api"
+    },
+    "config": {
+        "console": {
+            "consoleClear": true
+        },
+        "color": {
+            "info": "#36393E"
+        },
+        "adminPort": 443,    
+        "dashboard": {
+            "admin": {
+                "username": "admin",
+                "password": "password"
+            }
+        }
+    },
+    "lavalink": [{
+        "name": "Node 1",
+        "url": "localhost:2333",
+        "auth": "youshallnotpass"
+    }]
+}
