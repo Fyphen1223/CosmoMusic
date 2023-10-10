@@ -24,8 +24,8 @@ dependencies:
     specifier: ^4.18.2
     version: 4.18.2
   express-rate-limit:
-    specifier: ^7.1.0
-    version: 7.1.0(express@4.18.2)
+    specifier: ^7.1.1
+    version: 7.1.1(express@4.18.2)
   express-session:
     specifier: ^1.17.3
     version: 1.17.3
@@ -457,8 +457,8 @@ packages:
     engines: {node: '>= 0.6'}
     dev: false
 
-  /express-rate-limit@7.1.0(express@4.18.2):
-    resolution: {integrity: sha512-pwKOMedrpJJeINON/9jhAa18udV2qwxPZSoklPZK8pmXxUyE5uXaptiwjGw8bZILbxqfUZ/p8pQA99ODjSgA5Q==}
+  /express-rate-limit@7.1.1(express@4.18.2):
+    resolution: {integrity: sha512-o5ye/a4EHCPQPju25Y4HChHybrCM9v37QtQDqXUDZGuD+HB7Cbu8ZhJP6/9RORcSNtkCpnEssa6oUgJgzc7ckQ==}
     engines: {node: '>= 16'}
     peerDependencies:
       express: ^4 || ^5
@@ -990,7 +990,6 @@ packages:
     name: shoukaku
     version: 4.0.0-dev
     engines: {node: '>=18.0.0', npm: '>=7.0.0'}
-    prepare: true
     requiresBuild: true
     dependencies:
       ws: 8.14.2
