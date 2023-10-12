@@ -25,8 +25,18 @@
  Then just change directory in the "CosmoMusic" folder, and install packages with the below command:
  
  ```bash
- npm i 
+ pnpm i 
  ```
+
+ <details><summary>When error</summary><div>
+  
+ You have not installed pnpm yet. Please install pnpm using below command:
+
+ ```
+ npm install -g pnpm
+ ```
+
+ </div></details>
  
  Then you have to create config.json, which will be a core config of the bot.
  See [./config.json.example](./config.json.example) to get some instance. 
