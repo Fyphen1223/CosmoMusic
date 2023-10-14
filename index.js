@@ -47,22 +47,22 @@ const playlist = tryRequire('./db/playlist.json');
 const fs = require('fs');
 const Genius = require('genius-lyrics');
 const lyricsSearcher = new Genius.Client(config.token.genius);
-const { spotifyApiClient } = require('./utils/api-client.js');
+const { spotifyApiClient, palmLLMApiClient } = require('./utils/api-client.js');
 const spotifyClient = new spotifyApiClient({
     clientId: config.spotify.clientId,
     clientSecret: config.spotify.clientSecret
 });
-
+const palmLLMClient = new palmLLMApiClient({
+    token: config.token.palm
+});
 const https = require('https');
 const express = require('express');
 const session = require('express-session');
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
-const csrf = require('lusca').csrf;
 const socketio = require('socket.io');
 const app = express();
 app.use(bodyParser.urlencoded({ extended: false }));
-app.use(csrf());
 app.use(cookieParser());
 const RateLimit = require('express-rate-limit');
 const limiter = RateLimit({
@@ -70,18 +70,11 @@ const limiter = RateLimit({
     max: 100, // max 100 requests per windowMs
 });
 app.use(limiter);
-const sess = {
+app.use(session({
     secret: config.config.dashboard.cookieSecret,
-    cookie: {
-        maxAge: 600000,
-        secure: true,
-        httpOnly: true,
-    },
-    resave: false,
-    saveUninitialized: false,
-};
-sess.cookie.secure = true;
-app.use(session(sess));
+    resave: true,
+    saveUninitialized: true
+}));
 const server = https.createServer(
     {
         key: fs.readFileSync('./ssl/privatekey.pem'),
@@ -91,7 +84,6 @@ const server = https.createServer(
     app,
 );
 const io = new socketio.Server(server);
-
 const guildList = [];
 const guildNameList = [];
 
@@ -107,6 +99,16 @@ client.on('ready', async (u) => {
     await spotifyClient.generateCredential();
     return;
 });
+client.on('messageCreate', async (message) => {
+    if (message.author.bot) return;
+    try {
+        const generatedText = await palmLLMClient.generateText(message.content);
+        message.reply(generatedText);
+    } catch (err) {
+        return;
+    }
+}
+);
 client.on('interactionCreate', async (interaction) => {
     if (!interaction.isAutocomplete()) return;
     const guildId = interaction.guild.id;
@@ -772,10 +774,10 @@ client.on('interactionCreate', async (interaction) => {
             if (interaction.options.getBoolean('autoplay')) {
                 queue[guildId].autoPlay = true;
                 queue[guildId].autoRelay = false;
-                await interaction.editReply('From now on, the queue will be automatically replayed when it has finished.');
+                await interaction.editReply('From now on, a song or something will be played when the queue has finished.');
             } else {
                 queue[guildId].autoPlay = false;
-                await interaction.editReply('From now on, the queue will not be automatically replayed when it has finished.');
+                await interaction.editReply('From now on, a song or something will be played when the queue has finished.');
             }
         }
         return;
@@ -804,7 +806,6 @@ async function startPlay(guildId) {
     await queue[guildId].player.playTrack({ track: queue[guildId].queue[index].data.encoded });
     return;
 }
-
 function addEventListenerToPlayer(guildId) {
     queue[guildId].player.on('start', async function (s) {
         queue[guildId].player.status = 'playing';
@@ -933,8 +934,21 @@ function addEventListenerToPlayer(guildId) {
             } if (queue[guildId].autoPlay) {
                 const previous = queue[guildId].previous;
                 if (previous.data.info.sourceName === "spotify") {
-                    const track = await spotifyClient.getRecommendations(previous.data.info.identifier);
-
+                    const res = await spotifyClient.getRecommendations(previous.data.info.identifier);
+                    const track = await queue[guildId].node.rest.resolve(`https://open.spotify.com/intl-ja/track/${res}`);
+                    queue[guildId].add(track.data, "Auto Recommendation");
+                    queue[guildId].index++;
+                    await queue[guildId].player.playTrack({ track: queue[guildId].queue[index].data.encoded });
+                } else {
+                    const searchResult = await queue[guildId].node.rest.resolve(`ytsearch:${previous.data.info.author}`);
+                    if (!searchResult?.data.length) {
+                        await queue[guildId].textChannel.send('Finished playing queue. I was not able to find any recommendation for you.');
+                        return;
+                    }
+                    res = searchResult.data.shift();
+                    queue[guildId].add(res, "Auto Recommendation");
+                    queue[guildId].index++;
+                    await queue[guildId].player.playTrack({ track: queue[guildId].queue[index].data.encoded });
                 }
             } else {
                 await queue[guildId].textChannel.send('Finished playing queue.');
@@ -1073,7 +1087,7 @@ function addServer() {
         const password = req.body.password;
         if (username === config.config.dashboard.admin.username && password === config.config.dashboard.admin.password) {
             req.session.regenerate((err) => {
-                req.session.username = 'admin';
+                req.session.username = config.config.dashboard.admin.username;
                 res.redirect('/');
             });
         } else {

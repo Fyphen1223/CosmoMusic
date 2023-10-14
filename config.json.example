@@ -9,7 +9,8 @@
         "clientSecret": "your spotify credential"
     },
     "token": {
-        "genius": "genius lyric api"
+        "genius": "genius lyric api",
+        "palm": "Google PaLM api key"
     },
     "config": {
         "console": {

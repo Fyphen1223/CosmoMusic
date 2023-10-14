@@ -24,7 +24,7 @@ class spotifyApiClient {
     }
     getRecommendations = async function (seed) {
         const res = await axios({
-            method: 'get',
+            method: 'GET',
             url: `https://api.spotify.com/v1/recommendations`,
             headers: {
                 'Content-Type': 'application/json',
@@ -40,4 +40,29 @@ class spotifyApiClient {
     }
 }
 
-module.exports = { spotifyApiClient };
+class palmLLMApiClient {
+    constructor(config) {
+        this.token = config.token;
+    }
+    generateText = async function (prompt) {
+        const res = await axios({
+            method: 'POST',
+            url: `https://generativelanguage.googleapis.com/v1beta2/models/text-bison-001:generateText?key=${this.token}`,
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            data: {
+                "prompt": {
+                    "text": `You are a helpful assistant called "Cosmo AI". You must not start your answer with "Cosmo AI" or something like that. Please be a professional of anythings. Reply to this conversation: ${prompt}`
+                }
+            }
+        });
+        if (res.error) {
+            throw new ApiClientError("The language was not supported.");
+        } else {
+            return res.data.candidates[0].output;
+        }
+    }
+}
+
+module.exports = { spotifyApiClient, palmLLMApiClient };
