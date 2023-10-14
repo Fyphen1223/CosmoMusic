@@ -37,7 +37,7 @@ dependencies:
     version: 1.7.0
   shoukaku:
     specifier: github:Deivu/Shoukaku
-    version: github.com/Deivu/Shoukaku/89f335b0871e466ec3d51bcd72988c674fd0c802
+    version: git/github.com+Deivu/Shoukaku/89f335b0871e466ec3d51bcd72988c674fd0c802
   socket.io:
     specifier: ^4.7.2
     version: 4.7.2
@@ -994,8 +994,8 @@ packages:
         optional: true
     dev: false
 
-  github.com/Deivu/Shoukaku/89f335b0871e466ec3d51bcd72988c674fd0c802:
-    resolution: {tarball: https://codeload.github.com/Deivu/Shoukaku/tar.gz/89f335b0871e466ec3d51bcd72988c674fd0c802}
+  git/github.com+Deivu/Shoukaku/89f335b0871e466ec3d51bcd72988c674fd0c802:
+    resolution: {commit: 89f335b0871e466ec3d51bcd72988c674fd0c802, repo: git@github.com:Deivu/Shoukaku.git, type: git}
     name: shoukaku
     version: 4.0.0-dev
     engines: {node: '>=18.0.0', npm: '>=7.0.0'}
