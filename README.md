@@ -13,7 +13,12 @@
  For code of conduct, see [./CODE_OF_CONDUCT.md](./CODE_OF_CONDUCT.md)
 
  If you want to contribute, see [./CONTRIBUTING.md](./CONTRIBUTING.md)
- 
+
+ ## Star History
+
+ [![Star History Chart](https://api.star-history.com/svg?repos=Fyphen1223/CosmoMusic&type=Date)](https://star-history.com/#Fyphen1223/CosmoMusic&Date)
+
+
 # 🖥️ Install on your device
 
  Clone this [repository](https://github.com/Fyphen1223/CosmoMusic) somehow. For example, you can simply do this command: 
