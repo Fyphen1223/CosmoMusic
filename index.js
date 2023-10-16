@@ -1198,42 +1198,12 @@ io.on('connection', (socket) => {
     });
     socket.on('voice', async (result, id) => {
         console.log(result, id);
-        if (result.match('を再生')) {
-            const query = result.replace('を再生', '');
-            const api = new YoutubeMusicApi();
-            await api.initalize();
-            const stat = await api.search(url, 'song').then(async (result) => {
-                if (result['content'].length === 0) return;
-                if (audio[guildId]['id'] === undefined || audio[guildId]['id'] === '') {
-                    audio[guildId]['queue'].push(`https://youtube.com/watch?v=${result['content'][0]['videoId']}`);
-                    return 'NO';
-                } else {
-                    audio[guildId]['queue'].push(`https://youtube.com/watch?v=${result['content'][0]['videoId']}`);
-                    return 'PLAYING';
-                }
-            });
-        }
         if (result.match('停止')) {
-            audio[id.toString()]['player'].pause();
+            queue[id.toString()].player.pause();
         }
         if (result.match('再開')) {
-            audio[id.toString()]['player'].unpause();
+            queue[id.toString].player.unpause();
         }
-        const options = {
-            url: 'https://api.a3rt.recruit.co.jp/talk/v1/smalltalk',
-            method: 'POST',
-            form: {
-                apikey: config.token.talk,
-                query: result,
-            },
-            json: true,
-        };
-        requester(options, function (error, response, body) {
-            jpGtts.save('./audio/tts.wav', body.results[0].reply, async function () {
-                const resource = createAudioResource('./audio/tts.wav');
-                audio[id].player.play(resource);
-            });
-        });
     });
     socket.on('sendTyping', async (id) => {
         try {
