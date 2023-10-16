@@ -62,6 +62,8 @@ const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
 const socketio = require('socket.io');
 const app = express();
+const csrf = require('lusca').csrf();
+const helmet = require('helmet');
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 const RateLimit = require('express-rate-limit');
@@ -74,8 +76,13 @@ app.use(session({
     secret: config.config.dashboard.cookieSecret,
     resave: true,
     saveUninitialized: true,
-    secure: true
+    cookie: {
+        httpOnly: true,
+        secure: true
+    }
 }));
+app.use(csrf());
+app.use(helmet())
 const server = https.createServer(
     {
         key: fs.readFileSync('./ssl/privatekey.pem'),
