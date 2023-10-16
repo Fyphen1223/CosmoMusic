@@ -82,7 +82,7 @@ app.use(session({
     }
 }));
 app.use(csrf());
-app.use(helmet())
+app.use(helmet());
 const server = https.createServer(
     {
         key: fs.readFileSync('./ssl/privatekey.pem'),
