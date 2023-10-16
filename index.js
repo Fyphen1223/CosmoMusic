@@ -78,7 +78,8 @@ app.use(session({
     saveUninitialized: true,
     cookie: {
         httpOnly: true,
-        secure: true
+        secure: true,
+        maxAge: 60000
     }
 }));
 app.use(csrf());
