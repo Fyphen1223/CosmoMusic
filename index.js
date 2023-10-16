@@ -32,7 +32,7 @@ const shoukakuOptions = {
     'resumeTimeout': 0,
     'resumeByLibrary': true,
     'reconnectTries': 3,
-    'reconnectInterval': 5,
+    'reconnectInterval': 100,
     'restTimeout': 5,
     'moveOnDisconnect': true,
     'userAgent': 'Cosmo Music/v0.0.1',
@@ -73,7 +73,8 @@ app.use(limiter);
 app.use(session({
     secret: config.config.dashboard.cookieSecret,
     resave: true,
-    saveUninitialized: true
+    saveUninitialized: true,
+    secure: true
 }));
 const server = https.createServer(
     {
@@ -1199,15 +1200,15 @@ io.on('connection', (socket) => {
     socket.on('voice', async (result, id) => {
         console.log(result, id);
         if (result.match('停止')) {
-            queue[id.toString()].player.pause();
+            queue[id].player.pause();
         }
         if (result.match('再開')) {
-            queue[id.toString].player.unpause();
+            queue[id].player.unpause();
         }
     });
     socket.on('sendTyping', async (id) => {
         try {
-            await client.channels.cache.get(id.toString()).sendTyping();
+            await client.channels.cache.get(id).sendTyping();
         } catch (err) {
             io.emit('warn', 'Could not send typing to the channel.');
         }
