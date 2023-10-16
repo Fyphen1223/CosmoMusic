@@ -21,6 +21,8 @@
 
 # 🖥️ Install on your device
 
+ Be aware that this bot might not be suitable for personal uses because it requires SSL certificate or domain or something like that. If you do not want to do such tedious things, you should remove some lines from this repo such as the code that establishes server, or palm AI chat.
+ 
  Clone this [repository](https://github.com/Fyphen1223/CosmoMusic) somehow. For example, you can simply do this command: 
  
  ```bash
