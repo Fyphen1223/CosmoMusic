@@ -24,6 +24,8 @@
    </picture> 
  </a>
 
+ [![Stargazers repo roster for @USERNAME/REPO_NAME](https://reporoster.com/stars/dark/Fyphen1223/CosmoMusic)](https://github.com/dark/Fyphen1223/CosmoMusic/stargazers)
+
  [![Forkers repo roster for @USERNAME/REPO_NAME](https://reporoster.com/forks/dark/Fyphen1223/CosmoMusic)](https://github.com/Fyphen1223/CosmoMusic/network/members)
 
 
