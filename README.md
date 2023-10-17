@@ -15,8 +15,14 @@
  If you want to contribute, see [./CONTRIBUTING.md](./CONTRIBUTING.md)
 
  ## Star History
-
- [![Star History Chart](https://api.star-history.com/svg?repos=Fyphen1223/CosmoMusic&type=Date)](https://star-history.com/#Fyphen1223/CosmoMusic&Date)
+ 
+ <a href="https://star-history.com/#Fyphen1223/CosmoMusic&Date">
+   <picture>
+     <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=Fyphen1223/CosmoMusic&type=Date&theme=dark" />
+     <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=Fyphen1223/CosmoMusic&type=Date" />
+     <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=Fyphen1223/CosmoMusic&type=Date" />
+   </picture> 
+ </a>
 
 
 # 🖥️ Install on your device
