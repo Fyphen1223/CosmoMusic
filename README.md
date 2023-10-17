@@ -14,7 +14,7 @@
 
  If you want to contribute, see [./CONTRIBUTING.md](./CONTRIBUTING.md)
 
- ## Star History
+ ## Star, Fork History and People
  
  <a href="https://star-history.com/#Fyphen1223/CosmoMusic&Date">
    <picture>
