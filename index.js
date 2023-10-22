@@ -1,7 +1,6 @@
 const start = new Date();
 const config = require('./config.json');
 if (config.config.console.consoleClear) console.clear();
-console.log('🏁 - \x1b[34mReady... Please wait, now loading packages... (Step 1/4)\x1b[39m');
 const discord = require('discord.js');
 const { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, PermissionsBitField } = require('discord.js');
 const client = new discord.Client({
@@ -118,7 +117,7 @@ client.on('ready', async (u) => {
 client.on('messageCreate', async (message) => {
     if (message.author.bot) return;
     try {
-        const generatedText = await palmLLMClient.generateText(message.content);
+        //const generatedText = await palmLLMClient.generateText(message.content);
         //message.reply(generatedText);
     } catch (err) {
         return;
