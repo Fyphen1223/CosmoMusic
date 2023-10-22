@@ -69,7 +69,7 @@ const sessions = session({
     resave: true,
     saveUninitialized: true,
     sameSite: 'strcit',
-    path: 'path',
+    path: '/',
     cookie: {
         httpOnly: true,
         secure: true,
