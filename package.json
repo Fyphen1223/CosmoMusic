@@ -9,8 +9,9 @@
 		"express-rate-limit": "^7.1.1",
 		"express-session": "^1.17.3",
 		"genius-lyrics": "^4.4.6",
-		"lusca": "^1.7.0",
+		"helmet": "^7.0.0",
 		"shoukaku": "github:Deivu/Shoukaku",
-		"socket.io": "^4.7.2"
+		"socket.io": "^4.7.2",
+		"undici": "^5.26.4"
 	}
 }

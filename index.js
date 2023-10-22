@@ -42,12 +42,13 @@ const shoukaku = new Shoukaku(new Connectors.DiscordJS(client), config.lavalink,
 const util = require('./utils/utils.js');
 const queue = new util.queue();
 const log = new util.logger();
+const { request } = require('undici');
 const embeds = require('./utils/embeds.js');
 const playlist = tryRequire('./db/playlist.json');
 const fs = require('fs');
 const Genius = require('genius-lyrics');
 const lyricsSearcher = new Genius.Client(config.token.genius);
-const { spotifyApiClient, palmLLMApiClient } = require('./utils/api-client.js');
+const { spotifyApiClient, palmLLMApiClient, discordUserInfoClient } = require('./utils/api-client.js');
 const spotifyClient = new spotifyApiClient({
     clientId: config.spotify.clientId,
     clientSecret: config.spotify.clientSecret
@@ -55,24 +56,16 @@ const spotifyClient = new spotifyApiClient({
 const palmLLMClient = new palmLLMApiClient({
     token: config.token.palm
 });
+const discordUserClient = new discordUserInfoClient({
+    clientId: config.bot.applicationId,
+    clientSecret: config.bot.clientSecret,
+    url: config.config.dashboard.url
+});
 const https = require('https');
 const express = require('express');
-const session = require('express-session');
-const bodyParser = require('body-parser');
-const cookieParser = require('cookie-parser');
-const socketio = require('socket.io');
 const app = express();
-const csrf = require('lusca').csrf();
-const helmet = require('helmet');
-app.use(bodyParser.urlencoded({ extended: false }));
-app.use(cookieParser());
-const RateLimit = require('express-rate-limit');
-const limiter = RateLimit({
-    windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 100, // max 100 requests per windowMs
-});
-app.use(limiter);
-app.use(session({
+const session = require('express-session');
+const sessions = session({
     secret: config.config.dashboard.cookieSecret,
     resave: true,
     saveUninitialized: true,
@@ -81,9 +74,22 @@ app.use(session({
         secure: true,
         maxAge: 60000
     }
-}));
-app.use(csrf());
+});
+app.use(sessions);
+const bodyParser = require('body-parser');
+const cookieParser = require('cookie-parser');
+const socketio = require('socket.io');
+const helmet = require('helmet');
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(cookieParser());
+const RateLimit = require('express-rate-limit');
+const limiter = RateLimit({
+    windowMs: 1 * 60 * 1000, // 15 minutes
+    max: 10000, // max 100 requests per windowMs
+});
+app.use(limiter);
 app.use(helmet());
+app.use(express.json());
 const server = https.createServer(
     {
         key: fs.readFileSync('./ssl/privatekey.pem'),
@@ -93,6 +99,7 @@ const server = https.createServer(
     app,
 );
 const io = new socketio.Server(server);
+io.engine.use(sessions);
 const guildList = [];
 const guildNameList = [];
 
@@ -112,7 +119,7 @@ client.on('messageCreate', async (message) => {
     if (message.author.bot) return;
     try {
         const generatedText = await palmLLMClient.generateText(message.content);
-        message.reply(generatedText);
+        //message.reply(generatedText);
     } catch (err) {
         return;
     }
@@ -1092,16 +1099,6 @@ function addServer() {
         res.send(fs.readFileSync('./web/login.html'));
     });
     app.post('/login', (req, res) => {
-        const username = req.body.username;
-        const password = req.body.password;
-        if (username === config.config.dashboard.admin.username && password === config.config.dashboard.admin.password) {
-            req.session.regenerate((err) => {
-                req.session.username = config.config.dashboard.admin.username;
-                res.redirect('/');
-            });
-        } else {
-            res.redirect('/login');
-        }
     });
     app.get('/logout', (req, res) => {
         req.session.destroy((err) => {
@@ -1111,117 +1108,44 @@ function addServer() {
     app.get('/icon', (req, res) => {
         res.send(fs.readFileSync('./web/icon.webp'));
     });
+    app.get('/index.js', (req, res) => {
+        res.set('Content-Type', 'text/javascript');
+        res.send(fs.readFileSync('./web/index.js'));
+        return;
+    });
     app.get('/', async (req, res) => {
         const params = req.query;
         const code = params.code;
-        if (code) {
-            try {
-                const tokenResponseData = await request('https://discord.com/api/oauth2/token', {
-                    method: 'POST',
-                    body: new URLSearchParams({
-                        client_id: config.bot.clientId,
-                        client_secret: config.bot.clientSecret,
-                        code,
-                        grant_type: 'authorization_code',
-                        redirect_uri: `https://hacker-bot.ddns.net`,
-                        scope: 'identify',
-                    }).toString(),
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded',
-                    },
-                });
-                const oauthData = await tokenResponseData.body.json();
-                if (tokenResponseData.statusCode !== 200) {
-                    res.redirect('/login');
-                    return;
-                }
-            } catch (error) {
-                console.error(error);
-            }
-            req.session.regenerate((err) => {
-                req.session.username = 'user';
-                req.session.token = code;
-                res.redirect('/');
-            });
+        if (req.session.username) {
+            res.set('Content-Type', 'text/html');
+            await res.send(fs.readFileSync('./web/user.html'));
             return;
         }
-        if (!req.session.username) {
+        try {
+            const oauthData = await discordUserClient.getAccessToken(code);
+            req.session.regenerate(async (err) => {
+                req.session.accessToken = oauthData.access_token;
+                req.session.refreshToken = oauthData.refresh_token;
+                const userInfo = await discordUserClient.getUserInfo(oauthData);
+                req.session.username = userInfo.username;
+                req.session.id = userInfo.id;
+                req.session.avatar = userInfo.avatar;
+                req.session.discriminator = userInfo.discriminator;
+                req.session.email = userInfo.email;
+                req.session.verified = userInfo.verified;
+                res.redirect('/');
+            });
+        } catch (error) {
             res.redirect('/login');
-        } else {
-            if (req.session.username === 'admin') {
-                res.set('Content-Type', 'text/html');
-                res.send(fs.readFileSync('./web/index.html'));
-                return;
-            } else {
-                res.set('Content-Type', 'text/html');
-                await res.send(fs.readFileSync('./web/user.html'));
-                io.emit('getUserInfo', info);
-                return;
-            }
+            return;
         }
-    });
-    app.get('/spotify', async (req, res) => {
-        const token = req.params.code;
     });
 }
 addServer();
 io.on('connection', (socket) => {
-    log.info('Socket connected');
-    socket.on('msg', (content, id) => {
-        id = id.toString();
-        client.channels.cache.get(id).send(content);
-        io.emit('sended');
-    });
-    socket.on('dm', async (msg, user) => {
-        try {
-            usr = await client.users.cache.get(user);
-            usr.send(msg);
-            await io.emit('dmsended');
-        } catch (err) {
-            await io.emit('warn', 'Cannot send message to the User.');
-        }
-    });
-    socket.on('server', async () => {
-        io.emit('server', guildList, guildNameList);
-    });
-    socket.on('music', async (type, id) => {
-        if (type === 'pause') {
-            queue[id].player.setPaused(true);
-            eventOnPaused(id);
-        }
-        if (type === 'unpause') {
-            queue[id].player.setPaused(false);
-            eventOnResumed(id);
-        }
-    });
-    socket.on('refresh', async (id) => {
-        if (!queue[id]) return;
-        const index = queue[id].index;
-        const list = [];
-        let i = 0;
-        while (i !== queue[id].queue.length) {
-            list.push(queue[id].queue[i].data.info.title);
-            i++;
-        }
-        io.emit('refresher', queue[id].queue[index].data.info.title, queue[id].queue[index].data.info.author, queue[id].queue[index].data.info.length, queue[id].volume, queue[id].player.position, queue[id].queue[index].data.info.identifier, list);
-    });
-    socket.on('voice', async (result, id) => {
-        console.log(result, id);
-        if (result.match('停止')) {
-            queue[id].player.pause();
-        }
-        if (result.match('再開')) {
-            queue[id].player.unpause();
-        }
-    });
-    socket.on('sendTyping', async (id) => {
-        try {
-            await client.channels.cache.get(id).sendTyping();
-        } catch (err) {
-            io.emit('warn', 'Could not send typing to the channel.');
-        }
-    });
-    socket.on('getUserInfo', async () => {
-        console.log(socket.session);
+    const session = socket.request.session;
+    socket.emit('info', {
+        username: session.username,
+        email: session.email
     });
 });
