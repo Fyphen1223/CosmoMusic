@@ -42,7 +42,6 @@ const shoukaku = new Shoukaku(new Connectors.DiscordJS(client), config.lavalink,
 const util = require('./utils/utils.js');
 const queue = new util.queue();
 const log = new util.logger();
-const { request } = require('undici');
 const embeds = require('./utils/embeds.js');
 const playlist = tryRequire('./db/playlist.json');
 const fs = require('fs');
@@ -69,6 +68,8 @@ const sessions = session({
     secret: config.config.dashboard.cookieSecret,
     resave: true,
     saveUninitialized: true,
+    sameSite: 'strcit',
+    path: 'path',
     cookie: {
         httpOnly: true,
         secure: true,
