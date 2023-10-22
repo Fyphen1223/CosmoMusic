@@ -83,8 +83,8 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 const RateLimit = require('express-rate-limit');
 const limiter = RateLimit({
-    windowMs: 1 * 60 * 1000, // 15 minutes
-    max: 10000, // max 100 requests per windowMs
+    windowMs: 1 * 60 * 1000,
+    max: 100,
 });
 app.use(limiter);
 app.use(helmet());
