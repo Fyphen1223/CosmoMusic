@@ -68,14 +68,11 @@ const sessions = session({
     secret: config.config.dashboard.cookieSecret,
     resave: true,
     saveUninitialized: true,
-    sameSite: 'strcit',
-    name: 'sessionId',
+    name: 'session',
     cookie: {
         httpOnly: true,
         secure: true,
         maxAge: 60000,
-        domain: config.config.dashboard.url,
-        path: '/'
     }
 });
 app.use(sessions);
@@ -1109,7 +1106,8 @@ function addServer() {
         });
     });
     app.get('/icon', (req, res) => {
-        res.send(fs.readFileSync('./web/icon.webp'));
+        res.set('Content-Type', 'image/png');
+        res.send(fs.readFileSync('./web/icon.png'));
     });
     app.get('/index.js', (req, res) => {
         res.set('Content-Type', 'text/javascript');
