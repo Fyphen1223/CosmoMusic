@@ -69,12 +69,13 @@ const sessions = session({
     resave: true,
     saveUninitialized: true,
     sameSite: 'strcit',
-    path: '/',
-    domain: config.config.dashboard.url,
+    name: 'sessionId',
     cookie: {
         httpOnly: true,
         secure: true,
-        maxAge: 60000
+        maxAge: 60000,
+        domain: config.config.dashboard.url,
+        path: '/'
     }
 });
 app.use(sessions);
