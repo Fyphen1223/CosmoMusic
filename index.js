@@ -79,7 +79,7 @@ const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
 const socketio = require('socket.io');
 const helmet = require('helmet');
-app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser());
 const RateLimit = require('express-rate-limit');
 const limiter = RateLimit({
