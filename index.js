@@ -1113,6 +1113,10 @@ function addServer() {
         res.send(fs.readFileSync('./web/index.js'));
         return;
     });
+    app.get('/services', (req, res) => {
+        res.set('Content-Type', 'text/html');
+        res.send(fs.readFileSync('./web/services.html'));
+    });
     app.get('/', async (req, res) => {
         const params = req.query;
         const code = params.code;
