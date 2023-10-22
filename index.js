@@ -70,6 +70,7 @@ const sessions = session({
     saveUninitialized: true,
     sameSite: 'strcit',
     path: '/',
+    domain: config.config.dashboard.url,
     cookie: {
         httpOnly: true,
         secure: true,
