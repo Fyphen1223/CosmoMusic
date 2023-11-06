@@ -12,6 +12,6 @@
 		"helmet": "^7.0.0",
 		"shoukaku": "github:Deivu/Shoukaku",
 		"socket.io": "^4.7.2",
-		"undici": "^5.27.0"
+		"undici": "^5.27.2"
 	}
 }
