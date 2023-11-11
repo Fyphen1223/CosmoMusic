@@ -30,5 +30,10 @@
         "name": "Node 1",
         "url": "localhost:2333",
         "auth": "youshallnotpass"
-    }]
+    }],
+    "db": {
+        "password": "",
+        "host": "",
+        "port": 9603
+    }
 }

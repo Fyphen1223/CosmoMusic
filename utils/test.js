@@ -1,15 +1,8 @@
-const config = require('../config.json');
-
-const { spotifyApiClient } = require('./api-client.js');
-
-const client = new spotifyApiClient({
-    clientId: config.spotify.clientId,
-    clientSecret: config.spotify.clientSecret
-});
-
+const {channelGpt} = require('./gpt-client');
+const client = new channelGpt();
 async function main() {
-    const res = await client.generateCredential();
-    console.log(await client.getRecommendations("2DGa7iaidT5s0qnINlwMjJ"))
+    console.log(await client.generate("おはようございます！"));
+    console.log(await client.generate("先程私はなんと言いましたか？"));
 }
 
 main();

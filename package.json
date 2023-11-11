@@ -10,7 +10,8 @@
 		"express-session": "^1.17.3",
 		"genius-lyrics": "^4.4.6",
 		"lusca": "^1.7.0",
-		"shoukaku": "github:Deivu/Shoukaku",
+		"redis": "^4.6.10",
+		"shoukaku": "github:shipgirlproject/Shoukaku",
 		"socket.io": "^4.7.2"
 	}
 }
