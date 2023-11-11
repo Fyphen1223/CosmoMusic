@@ -32,24 +32,15 @@ dependencies:
   genius-lyrics:
     specifier: ^4.4.6
     version: 4.4.6
-<<<<<<< HEAD
-  lusca:
-    specifier: ^1.7.0
-    version: 1.7.0
+  helmet:
+    specifier: ^7.1.0
+    version: 7.1.0
   redis:
     specifier: ^4.6.10
     version: 4.6.10
   shoukaku:
-    specifier: github:shipgirlproject/Shoukaku
-    version: github.com/shipgirlproject/Shoukaku/ea4bb604ddd71510084a15fcf6efa522efd10711
-=======
-  helmet:
-    specifier: ^7.1.0
-    version: 7.1.0
-  shoukaku:
-    specifier: github:Deivu/Shoukaku
-    version: github.com/Deivu/Shoukaku/89f335b0871e466ec3d51bcd72988c674fd0c802
->>>>>>> 7288a4290681c2eabd06e4b37915c5d64e30093d
+    specifier: github:shipgirlproject/shoukaku
+    version: github.com/shipgirlproject/shoukaku/ea4bb604ddd71510084a15fcf6efa522efd10711
   socket.io:
     specifier: ^4.7.2
     version: 4.7.2
@@ -112,7 +103,7 @@ packages:
       '@discordjs/rest': 2.0.1
       '@discordjs/util': 1.0.1
       '@sapphire/async-queue': 1.5.0
-      '@types/ws': 8.5.8
+      '@types/ws': 8.5.9
       '@vladfrangu/async_event_emitter': 2.2.2
       discord-api-types: 0.37.50
       tslib: 2.6.2
@@ -122,7 +113,11 @@ packages:
       - utf-8-validate
     dev: false
 
-<<<<<<< HEAD
+  /@fastify/busboy@2.0.0:
+    resolution: {integrity: sha512-JUFJad5lv7jxj926GPgymrWQxxjPYuJNiNjNMzqT+HiuP6Vl3dk5xzG+8sTX96np0ZAluvaMzPsjhHZ5rNuNQQ==}
+    engines: {node: '>=14'}
+    dev: false
+
   /@redis/bloom@1.2.0(@redis/client@1.5.11):
     resolution: {integrity: sha512-HG2DFjYKbpNmVXsa0keLHp/3leGJz1mjh09f2RLGGLQZzSHpkmZWuwJbAvo3QcRY8p80m5+ZdXZdYOSBLlp7Cg==}
     peerDependencies:
@@ -170,11 +165,6 @@ packages:
       '@redis/client': ^1.0.0
     dependencies:
       '@redis/client': 1.5.11
-=======
-  /@fastify/busboy@2.0.0:
-    resolution: {integrity: sha512-JUFJad5lv7jxj926GPgymrWQxxjPYuJNiNjNMzqT+HiuP6Vl3dk5xzG+8sTX96np0ZAluvaMzPsjhHZ5rNuNQQ==}
-    engines: {node: '>=14'}
->>>>>>> 7288a4290681c2eabd06e4b37915c5d64e30093d
     dev: false
 
   /@sapphire/async-queue@1.5.0:
@@ -203,22 +193,22 @@ packages:
     resolution: {integrity: sha512-XW/Aa8APYr6jSVVA1y/DEIZX0/GMKLEVekNG727R8cs56ahETkRAy/3DR7+fJyh7oUgGwNQaRfXCun0+KbWY7Q==}
     dev: false
 
-  /@types/cors@2.8.15:
-    resolution: {integrity: sha512-n91JxbNLD8eQIuXDIChAN1tCKNWCEgpceU9b7ZMbFA+P+Q4yIeh80jizFLEvolRPc1ES0VdwFlGv+kJTSirogw==}
+  /@types/cors@2.8.16:
+    resolution: {integrity: sha512-Trx5or1Nyg1Fq138PCuWqoApzvoSLWzZ25ORBiHMbbUT42g578lH1GT4TwYDbiUOLFuDsCkfLneT2105fsFWGg==}
     dependencies:
-      '@types/node': 20.8.7
+      '@types/node': 20.9.0
     dev: false
 
-  /@types/node@20.8.7:
-    resolution: {integrity: sha512-21TKHHh3eUHIi2MloeptJWALuCu5H7HQTdTrWIFReA8ad+aggoX+lRes3ex7/FtpC+sVUpFMQ+QTfYr74mruiQ==}
+  /@types/node@20.9.0:
+    resolution: {integrity: sha512-nekiGu2NDb1BcVofVcEKMIwzlx4NjHlcjhoxxKBNLtz15Y1z7MYf549DFvkHSId02Ax6kGwWntIBPC3l/JZcmw==}
     dependencies:
-      undici-types: 5.25.3
+      undici-types: 5.26.5
     dev: false
 
-  /@types/ws@8.5.8:
-    resolution: {integrity: sha512-flUksGIQCnJd6sZ1l5dqCEG/ksaoAg/eUwiLAGTJQcfgvZJKF++Ta4bJA6A5aPSJmsr+xlseHn4KLgVlNnvPTg==}
+  /@types/ws@8.5.9:
+    resolution: {integrity: sha512-jbdrY0a8lxfdTp/+r7Z4CkycbOFN8WX+IOchLJr3juT/xzbJ8URyTVSJ/hvNdadTgM1mnedb47n+Y31GsFnQlg==}
     dependencies:
-      '@types/node': 20.8.7
+      '@types/node': 20.9.0
     dev: false
 
   /@vladfrangu/async_event_emitter@2.2.2:
@@ -457,7 +447,7 @@ packages:
       '@discordjs/util': 1.0.1
       '@discordjs/ws': 1.0.1
       '@sapphire/snowflake': 3.5.1
-      '@types/ws': 8.5.8
+      '@types/ws': 8.5.9
       discord-api-types: 0.37.50
       fast-deep-equal: 3.1.3
       lodash.snakecase: 4.1.1
@@ -510,13 +500,13 @@ packages:
     engines: {node: '>=10.0.0'}
     dev: false
 
-  /engine.io@6.5.3:
-    resolution: {integrity: sha512-IML/R4eG/pUS5w7OfcDE0jKrljWS9nwnEfsxWCIJF5eO6AHo6+Hlv+lQbdlAYsiJPHzUthLm1RUjnBzWOs45cw==}
+  /engine.io@6.5.4:
+    resolution: {integrity: sha512-KdVSDKhVKyOi+r5uEabrDLZw2qXStVvCsEB/LN3mw4WFi6Gx50jTyuxYVCwAAC0U46FdnzP/ScKRBTXb/NiEOg==}
     engines: {node: '>=10.2.0'}
     dependencies:
       '@types/cookie': 0.4.1
-      '@types/cors': 2.8.15
-      '@types/node': 20.8.7
+      '@types/cors': 2.8.16
+      '@types/node': 20.9.0
       accepts: 1.3.8
       base64id: 2.0.0
       cookie: 0.4.2
@@ -668,7 +658,7 @@ packages:
   /genius-lyrics@4.4.6:
     resolution: {integrity: sha512-TeSF4qXwLm+Nl8wUX+WUTJlEhPBanMw9EWpIHE2a/Qs4y2NBK99AHYfZJc73H1HVkZj4zPfscuGWlkQbbh0pDA==}
     dependencies:
-      node-html-parser: 6.1.10
+      node-html-parser: 6.1.11
       undici: 5.27.2
     dev: false
 
@@ -808,8 +798,8 @@ packages:
     engines: {node: '>= 0.6'}
     dev: false
 
-  /node-html-parser@6.1.10:
-    resolution: {integrity: sha512-6/uWdWxjQWQ7tMcFK2wWlrflsQUzh1HsEzlIf2j5+TtzfhT2yUvg3DwZYAmjEHeR3uX74ko7exjHW69J0tOzIg==}
+  /node-html-parser@6.1.11:
+    resolution: {integrity: sha512-FAgwwZ6h0DSDWxfD0Iq1tsDcBCxdJB1nXpLPPxX8YyVWzbfCjKWEzaynF4gZZ/8hziUmp7ZSaKylcn0iKhufUQ==}
     dependencies:
       css-select: 5.1.0
       he: 1.2.0
@@ -1001,7 +991,7 @@ packages:
       base64id: 2.0.0
       cors: 2.8.5
       debug: 4.3.4
-      engine.io: 6.5.3
+      engine.io: 6.5.4
       socket.io-adapter: 2.5.2
       socket.io-parser: 4.2.4
     transitivePeerDependencies:
@@ -1048,8 +1038,8 @@ packages:
       random-bytes: 1.0.0
     dev: false
 
-  /undici-types@5.25.3:
-    resolution: {integrity: sha512-Ga1jfYwRn7+cP9v8auvEXN1rX3sWqlayd4HP7OKk4mZWylEmu3KzXDUGrQUN6Ol7qo1gPvB2e5gX6udnyEPgdA==}
+  /undici-types@5.26.5:
+    resolution: {integrity: sha512-JlCMO+ehdEIKqlFxk6IfVoAUVmgz7cU7zD/h9XZ0qzeosSHmUJVOzSQvvYSYWXkFXC+IfLKSIffhv0sVZup6pA==}
     dev: false
 
   /undici@5.22.1:
@@ -1107,17 +1097,12 @@ packages:
         optional: true
     dev: false
 
-<<<<<<< HEAD
   /yallist@4.0.0:
     resolution: {integrity: sha512-3wdGidZyq5PB084XLES5TpOSRA3wjXAlIWMhum2kRcv/41Sn2emQ0dycQW4uZXLejwKvg6EsvbdlVL+FYEct7A==}
     dev: false
 
-  github.com/shipgirlproject/Shoukaku/ea4bb604ddd71510084a15fcf6efa522efd10711:
-    resolution: {tarball: https://codeload.github.com/shipgirlproject/Shoukaku/tar.gz/ea4bb604ddd71510084a15fcf6efa522efd10711}
-=======
-  github.com/Deivu/Shoukaku/89f335b0871e466ec3d51bcd72988c674fd0c802:
-    resolution: {tarball: https://codeload.github.com/Deivu/Shoukaku/tar.gz/89f335b0871e466ec3d51bcd72988c674fd0c802}
->>>>>>> 7288a4290681c2eabd06e4b37915c5d64e30093d
+  github.com/shipgirlproject/shoukaku/ea4bb604ddd71510084a15fcf6efa522efd10711:
+    resolution: {tarball: https://codeload.github.com/shipgirlproject/shoukaku/tar.gz/ea4bb604ddd71510084a15fcf6efa522efd10711}
     name: shoukaku
     version: 4.0.0-dev
     engines: {node: '>=18.0.0', npm: '>=7.0.0'}

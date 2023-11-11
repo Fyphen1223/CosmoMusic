@@ -9,16 +9,10 @@
 		"express-rate-limit": "^7.1.4",
 		"express-session": "^1.17.3",
 		"genius-lyrics": "^4.4.6",
-<<<<<<< HEAD
-		"lusca": "^1.7.0",
-		"redis": "^4.6.10",
-		"shoukaku": "github:shipgirlproject/Shoukaku",
-		"socket.io": "^4.7.2"
-=======
 		"helmet": "^7.1.0",
-		"shoukaku": "github:Deivu/Shoukaku",
+		"redis": "^4.6.10",
+		"shoukaku": "github:shipgirlproject/shoukaku",
 		"socket.io": "^4.7.2",
 		"undici": "^5.27.2"
->>>>>>> 7288a4290681c2eabd06e4b37915c5d64e30093d
 	}
 }
