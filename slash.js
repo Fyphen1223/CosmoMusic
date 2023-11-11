@@ -144,6 +144,14 @@ const commands = [
 	new SlashCommandBuilder()
 		.setName('filter')
 		.setDescription('Set filter'),
+	new SlashCommandBuilder()
+		.setName('gpt')
+		.setDescription('Configure GPT')
+		.addSubcommand(subcommand =>
+			subcommand
+				.setName('set')
+				.setDescription('Set GPTs on this channel')
+		)
 ].map(command => command.toJSON());
 const rest = new REST({ version: '10' }).setToken(config.bot.token);
 const reset = [];

@@ -14,5 +14,9 @@
 		"shoukaku": "github:shipgirlproject/shoukaku",
 		"socket.io": "^4.7.2",
 		"undici": "^5.27.2"
+	},
+	"scripts": {
+		"bot": "node index.js",
+		"host": "node shards.js"
 	}
 }
