@@ -1,7 +1,6 @@
 const start = new Date();
 const config = require('./config.json');
 if (config.config.console.consoleClear) console.clear();
-console.log('🏁 - \x1b[34mReady... Please wait, now loading packages... (Step 1/4)\x1b[39m');
 const discord = require('discord.js');
 const { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, PermissionsBitField } = require('discord.js');
 const client = new discord.Client({
@@ -32,7 +31,7 @@ const shoukakuOptions = {
     'resumeTimeout': 0,
     'resumeByLibrary': true,
     'reconnectTries': 3,
-    'reconnectInterval': 5,
+    'reconnectInterval': 100,
     'restTimeout': 5,
     'moveOnDisconnect': true,
     'userAgent': 'Cosmo Music/v0.0.1',
@@ -47,41 +46,49 @@ const playlist = tryRequire('./db/playlist.json');
 const fs = require('fs');
 const Genius = require('genius-lyrics');
 const lyricsSearcher = new Genius.Client(config.token.genius);
-const { spotifyApiClient } = require('./utils/api-client.js');
+const { spotifyApiClient, palmLLMApiClient, discordUserInfoClient } = require('./utils/api-client.js');
 const spotifyClient = new spotifyApiClient({
     clientId: config.spotify.clientId,
     clientSecret: config.spotify.clientSecret
 });
-
+const palmLLMClient = new palmLLMApiClient({
+    token: config.token.palm
+});
+const discordUserClient = new discordUserInfoClient({
+    clientId: config.bot.applicationId,
+    clientSecret: config.bot.clientSecret,
+    url: config.config.dashboard.url
+});
 const https = require('https');
 const express = require('express');
+const app = express();
 const session = require('express-session');
+const sessions = session({
+    secret: config.config.dashboard.cookieSecret,
+    resave: true,
+    saveUninitialized: true,
+    name: 'session',
+    cookie: {
+        httpOnly: true,
+        secure: true,
+        maxAge: 60000,
+    }
+});
+app.use(sessions);
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
-const csrf = require('lusca').csrf;
 const socketio = require('socket.io');
-const app = express();
-app.use(bodyParser.urlencoded({ extended: false }));
-app.use(csrf());
+const helmet = require('helmet');
+app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser());
 const RateLimit = require('express-rate-limit');
 const limiter = RateLimit({
-    windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 100, // max 100 requests per windowMs
+    windowMs: 1 * 60 * 1000,
+    max: 100,
 });
 app.use(limiter);
-const sess = {
-    secret: config.config.dashboard.cookieSecret,
-    cookie: {
-        maxAge: 600000,
-        secure: true,
-        httpOnly: true,
-    },
-    resave: false,
-    saveUninitialized: false,
-};
-sess.cookie.secure = true;
-app.use(session(sess));
+app.use(helmet());
+app.use(express.json());
 const server = https.createServer(
     {
         key: fs.readFileSync('./ssl/privatekey.pem'),
@@ -91,7 +98,7 @@ const server = https.createServer(
     app,
 );
 const io = new socketio.Server(server);
-
+io.engine.use(sessions);
 const guildList = [];
 const guildNameList = [];
 
@@ -107,6 +114,16 @@ client.on('ready', async (u) => {
     await spotifyClient.generateCredential();
     return;
 });
+client.on('messageCreate', async (message) => {
+    if (message.author.bot) return;
+    try {
+        //const generatedText = await palmLLMClient.generateText(message.content);
+        //message.reply(generatedText);
+    } catch (err) {
+        return;
+    }
+}
+);
 client.on('interactionCreate', async (interaction) => {
     if (!interaction.isAutocomplete()) return;
     const guildId = interaction.guild.id;
@@ -772,10 +789,10 @@ client.on('interactionCreate', async (interaction) => {
             if (interaction.options.getBoolean('autoplay')) {
                 queue[guildId].autoPlay = true;
                 queue[guildId].autoRelay = false;
-                await interaction.editReply('From now on, the queue will be automatically replayed when it has finished.');
+                await interaction.editReply('From now on, a song or something will be played when the queue has finished.');
             } else {
                 queue[guildId].autoPlay = false;
-                await interaction.editReply('From now on, the queue will not be automatically replayed when it has finished.');
+                await interaction.editReply('From now on, a song or something will be played when the queue has finished.');
             }
         }
         return;
@@ -804,7 +821,6 @@ async function startPlay(guildId) {
     await queue[guildId].player.playTrack({ track: queue[guildId].queue[index].data.encoded });
     return;
 }
-
 function addEventListenerToPlayer(guildId) {
     queue[guildId].player.on('start', async function (s) {
         queue[guildId].player.status = 'playing';
@@ -933,8 +949,21 @@ function addEventListenerToPlayer(guildId) {
             } if (queue[guildId].autoPlay) {
                 const previous = queue[guildId].previous;
                 if (previous.data.info.sourceName === "spotify") {
-                    const track = await spotifyClient.getRecommendations(previous.data.info.identifier);
-
+                    const res = await spotifyClient.getRecommendations(previous.data.info.identifier);
+                    const track = await queue[guildId].node.rest.resolve(`https://open.spotify.com/intl-ja/track/${res}`);
+                    queue[guildId].add(track.data, "Auto Recommendation");
+                    queue[guildId].index++;
+                    await queue[guildId].player.playTrack({ track: queue[guildId].queue[index].data.encoded });
+                } else {
+                    const searchResult = await queue[guildId].node.rest.resolve(`ytsearch:${previous.data.info.author}`);
+                    if (!searchResult?.data.length) {
+                        await queue[guildId].textChannel.send('Finished playing queue. I was not able to find any recommendation for you.');
+                        return;
+                    }
+                    res = searchResult.data.shift();
+                    queue[guildId].add(res, "Auto Recommendation");
+                    queue[guildId].index++;
+                    await queue[guildId].player.playTrack({ track: queue[guildId].queue[index].data.encoded });
                 }
             } else {
                 await queue[guildId].textChannel.send('Finished playing queue.');
@@ -1069,16 +1098,6 @@ function addServer() {
         res.send(fs.readFileSync('./web/login.html'));
     });
     app.post('/login', (req, res) => {
-        const username = req.body.username;
-        const password = req.body.password;
-        if (username === config.config.dashboard.admin.username && password === config.config.dashboard.admin.password) {
-            req.session.regenerate((err) => {
-                req.session.username = 'admin';
-                res.redirect('/');
-            });
-        } else {
-            res.redirect('/login');
-        }
     });
     app.get('/logout', (req, res) => {
         req.session.destroy((err) => {
@@ -1086,149 +1105,51 @@ function addServer() {
         });
     });
     app.get('/icon', (req, res) => {
-        res.send(fs.readFileSync('./web/icon.webp'));
+        res.set('Content-Type', 'image/png');
+        res.send(fs.readFileSync('./web/icon.png'));
+    });
+    app.get('/index.js', (req, res) => {
+        res.set('Content-Type', 'text/javascript');
+        res.send(fs.readFileSync('./web/index.js'));
+        return;
+    });
+    app.get('/services', (req, res) => {
+        res.set('Content-Type', 'text/html');
+        res.send(fs.readFileSync('./web/services.html'));
     });
     app.get('/', async (req, res) => {
         const params = req.query;
         const code = params.code;
-        if (code) {
-            try {
-                const tokenResponseData = await request('https://discord.com/api/oauth2/token', {
-                    method: 'POST',
-                    body: new URLSearchParams({
-                        client_id: config.bot.clientId,
-                        client_secret: config.bot.clientSecret,
-                        code,
-                        grant_type: 'authorization_code',
-                        redirect_uri: `https://hacker-bot.ddns.net`,
-                        scope: 'identify',
-                    }).toString(),
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded',
-                    },
-                });
-                const oauthData = await tokenResponseData.body.json();
-                if (tokenResponseData.statusCode !== 200) {
-                    res.redirect('/login');
-                    return;
-                }
-            } catch (error) {
-                console.error(error);
-            }
-            req.session.regenerate((err) => {
-                req.session.username = 'user';
-                req.session.token = code;
-                res.redirect('/');
-            });
+        if (req.session.username) {
+            res.set('Content-Type', 'text/html');
+            await res.send(fs.readFileSync('./web/user.html'));
             return;
         }
-        if (!req.session.username) {
+        try {
+            const oauthData = await discordUserClient.getAccessToken(code);
+            req.session.regenerate(async (err) => {
+                req.session.accessToken = oauthData.access_token;
+                req.session.refreshToken = oauthData.refresh_token;
+                const userInfo = await discordUserClient.getUserInfo(oauthData);
+                req.session.username = userInfo.username;
+                req.session.id = userInfo.id;
+                req.session.avatar = userInfo.avatar;
+                req.session.discriminator = userInfo.discriminator;
+                req.session.email = userInfo.email;
+                req.session.verified = userInfo.verified;
+                res.redirect('/');
+            });
+        } catch (error) {
             res.redirect('/login');
-        } else {
-            if (req.session.username === 'admin') {
-                res.set('Content-Type', 'text/html');
-                res.send(fs.readFileSync('./web/index.html'));
-                return;
-            } else {
-                res.set('Content-Type', 'text/html');
-                await res.send(fs.readFileSync('./web/user.html'));
-                io.emit('getUserInfo', info);
-                return;
-            }
+            return;
         }
-    });
-    app.get('/spotify', async (req, res) => {
-        const token = req.params.code;
     });
 }
 addServer();
 io.on('connection', (socket) => {
-    log.info('Socket connected');
-    socket.on('msg', (content, id) => {
-        id = id.toString();
-        client.channels.cache.get(id).send(content);
-        io.emit('sended');
-    });
-    socket.on('dm', async (msg, user) => {
-        try {
-            usr = await client.users.cache.get(user);
-            usr.send(msg);
-            await io.emit('dmsended');
-        } catch (err) {
-            await io.emit('warn', 'Cannot send message to the User.');
-        }
-    });
-    socket.on('server', async () => {
-        io.emit('server', guildList, guildNameList);
-    });
-    socket.on('music', async (type, id) => {
-        if (type === 'pause') {
-            queue[id].player.setPaused(true);
-            eventOnPaused(id);
-        }
-        if (type === 'unpause') {
-            queue[id].player.setPaused(false);
-            eventOnResumed(id);
-        }
-    });
-    socket.on('refresh', async (id) => {
-        if (!queue[id]) return;
-        const index = queue[id].index;
-        const list = [];
-        let i = 0;
-        while (i !== queue[id].queue.length) {
-            list.push(queue[id].queue[i].data.info.title);
-            i++;
-        }
-        io.emit('refresher', queue[id].queue[index].data.info.title, queue[id].queue[index].data.info.author, queue[id].queue[index].data.info.length, queue[id].volume, queue[id].player.position, queue[id].queue[index].data.info.identifier, list);
-    });
-    socket.on('voice', async (result, id) => {
-        console.log(result, id);
-        if (result.match('を再生')) {
-            const query = result.replace('を再生', '');
-            const api = new YoutubeMusicApi();
-            await api.initalize();
-            const stat = await api.search(url, 'song').then(async (result) => {
-                if (result['content'].length === 0) return;
-                if (audio[guildId]['id'] === undefined || audio[guildId]['id'] === '') {
-                    audio[guildId]['queue'].push(`https://youtube.com/watch?v=${result['content'][0]['videoId']}`);
-                    return 'NO';
-                } else {
-                    audio[guildId]['queue'].push(`https://youtube.com/watch?v=${result['content'][0]['videoId']}`);
-                    return 'PLAYING';
-                }
-            });
-        }
-        if (result.match('停止')) {
-            audio[id.toString()]['player'].pause();
-        }
-        if (result.match('再開')) {
-            audio[id.toString()]['player'].unpause();
-        }
-        const options = {
-            url: 'https://api.a3rt.recruit.co.jp/talk/v1/smalltalk',
-            method: 'POST',
-            form: {
-                apikey: config.token.talk,
-                query: result,
-            },
-            json: true,
-        };
-        requester(options, function (error, response, body) {
-            jpGtts.save('./audio/tts.wav', body.results[0].reply, async function () {
-                const resource = createAudioResource('./audio/tts.wav');
-                audio[id].player.play(resource);
-            });
-        });
-    });
-    socket.on('sendTyping', async (id) => {
-        try {
-            await client.channels.cache.get(id.toString()).sendTyping();
-        } catch (err) {
-            io.emit('warn', 'Could not send typing to the channel.');
-        }
-    });
-    socket.on('getUserInfo', async () => {
-        console.log(socket.session);
+    const session = socket.request.session;
+    socket.emit('info', {
+        username: session.username,
+        email: session.email
     });
 });

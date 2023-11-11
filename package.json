@@ -1,17 +1,24 @@
 {
 	"dependencies": {
 		"@discordjs/collection": "^1.5.3",
-		"axios": "^1.5.1",
+		"axios": "^1.6.1",
 		"body-parser": "^1.20.2",
 		"cookie-parser": "^1.4.6",
 		"discord.js": "^14.13.0",
 		"express": "^4.18.2",
-		"express-rate-limit": "^7.1.1",
+		"express-rate-limit": "^7.1.4",
 		"express-session": "^1.17.3",
 		"genius-lyrics": "^4.4.6",
+<<<<<<< HEAD
 		"lusca": "^1.7.0",
 		"redis": "^4.6.10",
 		"shoukaku": "github:shipgirlproject/Shoukaku",
 		"socket.io": "^4.7.2"
+=======
+		"helmet": "^7.1.0",
+		"shoukaku": "github:Deivu/Shoukaku",
+		"socket.io": "^4.7.2",
+		"undici": "^5.27.2"
+>>>>>>> 7288a4290681c2eabd06e4b37915c5d64e30093d
 	}
 }
