@@ -46,23 +46,15 @@ const playlist = tryRequire('./db/playlist.json');
 const fs = require('fs');
 const Genius = require('genius-lyrics');
 const lyricsSearcher = new Genius.Client(config.token.genius);
-const { spotifyApiClient, palmLLMApiClient, discordUserInfoClient } = require('./utils/api-client.js');
+const { spotifyApiClient } = require('./utils/api-client.js');
 const spotifyClient = new spotifyApiClient({
     clientId: config.spotify.clientId,
     clientSecret: config.spotify.clientSecret
 });
-const palmLLMClient = new palmLLMApiClient({
-    token: config.token.palm
-});
-const discordUserClient = new discordUserInfoClient({
-    clientId: config.bot.applicationId,
-    clientSecret: config.bot.clientSecret,
-    url: config.config.dashboard.url
-});
-
+const {gpts} = require('./utils/gpt-client.js');
+const gptQueue = new gpts();
 const guildList = [];
 const guildNameList = [];
-
 client.shoukaku = shoukaku;
 client.on('ready', async (u) => {
     log.ready(`Logged in as ${u.user.tag}`);
@@ -77,12 +69,12 @@ client.on('ready', async (u) => {
 });
 client.on('messageCreate', async (message) => {
     if (message.author.bot) return;
-    try {
-        //const generatedText = await palmLLMClient.generateText(message.content);
-        //message.reply(generatedText);
-    } catch (err) {
-        return;
+    if(!gptQueue[message.guild.id]) {
+        gptQueue.add(message.guild.id);
     }
+    const res = await gptQueue[message.guild.id].generate(message);
+    await message.reply(res);
+    return;
 }
 );
 client.on('interactionCreate', async (interaction) => {
