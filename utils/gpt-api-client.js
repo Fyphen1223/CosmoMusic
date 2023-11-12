@@ -9,7 +9,7 @@ async function generate(prompt, model) {
         },
         data: {
             "prompt": prompt,
-            "model": model || 1,
+            "model": model || "gpt-4-32k",
             "type": "json"
         }
     });
@@ -22,7 +22,7 @@ async function generate(prompt, model) {
             },
             data: {
                 "prompt": prompt.slice(-20000),
-                "model": model || 1,
+                "model": model || "gpt-4-32k",
                 "type": "json"
             }
         }); 

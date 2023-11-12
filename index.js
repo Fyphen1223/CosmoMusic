@@ -72,6 +72,7 @@ client.on('messageCreate', async (message) => {
     if(!gptQueue[message.guild.id]) {
         gptQueue.add(message.guild.id);
     }
+    await message.channel.sendTyping();
     const res = await gptQueue[message.guild.id].generate(message);
     await message.reply(res);
     return;
