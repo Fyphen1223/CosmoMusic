@@ -79,9 +79,7 @@ client.on("ready", async (u) => {
 });
 client.on("messageCreate", async (message) => {
 	if (message.author.bot) return;
-	if (!gptQueue[message.guild.id]) {
-		gptQueue.add(message.guild.id);
-	}
+	if (!gptQueue[message.guild.id]) return;
 	await message.channel.sendTyping();
 	const res = await gptQueue[message.guild.id].generate(message);
 	await message.reply(res);
@@ -268,7 +266,9 @@ client.on("interactionCreate", async (interaction) => {
 					});
 				} catch (err) {
 					queue[guildId].player = null;
-					await interaction.editReply("Sorry, I cannot join the voice channel. Please check my permissions.");
+					await interaction.editReply(
+						"Sorry, I cannot join the voice channel. Please check my permissions."
+					);
 					return;
 				}
 				queue[guildId].voiceChannel = interaction.member.voice.channelId;
@@ -290,7 +290,9 @@ client.on("interactionCreate", async (interaction) => {
 					});
 				} catch (err) {
 					queue[guildId].player = null;
-					await interaction.editReply("Sorry, I cannot join the voice channel. Please check my permissions.");
+					await interaction.editReply(
+						"Sorry, I cannot join the voice channel. Please check my permissions."
+					);
 					return;
 				}
 				queue[guildId].voiceChannel = interaction.member.voice.channelId;
@@ -471,7 +473,10 @@ client.on("interactionCreate", async (interaction) => {
 		if (customId === "queue") {
 			let content = "";
 			if (queue[guildId]["queue"].length === 0) {
-				const embed = new EmbedBuilder().setColor(config.config.color.info).setTitle("Queue").setDescription("No music added to the queue.");
+				const embed = new EmbedBuilder()
+					.setColor(config.config.color.info)
+					.setTitle("Queue")
+					.setDescription("No music added to the queue.");
 				await interaction.editReply({ embeds: [embed] });
 			} else {
 				content = content + `📀 ${queue[guildId].queue[queue[guildId].index].data.info.title}`;
@@ -499,14 +504,19 @@ client.on("interactionCreate", async (interaction) => {
 				console.log(res);
 				queue[guildId].add(res.data[0], interaction.user);
 				queue[guildId].add(res.data[1], interaction.user);
-				await interaction.editReply(`Added ${res.data[0].info.title} and ${res.data[1].info.title} to the queue.`);
+				await interaction.editReply(
+					`Added ${res.data[0].info.title} and ${res.data[1].info.title} to the queue.`
+				);
 			}
 			return;
 		}
 		if (interaction.options.getSubcommand() === "display") {
 			let content = "";
 			if (queue[guildId]["queue"].length === 0) {
-				const embed = new EmbedBuilder().setColor(config.config.color.info).setTitle("Queue").setDescription("No music added to the queue.");
+				const embed = new EmbedBuilder()
+					.setColor(config.config.color.info)
+					.setTitle("Queue")
+					.setDescription("No music added to the queue.");
 				await interaction.editReply({ embeds: [embed] });
 			} else {
 				content = content + `📀 ${queue[guildId].queue[queue[guildId].index].data.info.title}`;
@@ -525,7 +535,10 @@ client.on("interactionCreate", async (interaction) => {
 		}
 		if (interaction.options.getSubcommand() === "clear") {
 			if (!queue[guildId]) queue.add(guildId);
-			if (!interaction.member.voice.channelId || interaction.member.voice.channelId !== queue[guildId].voiceChannel) {
+			if (
+				!interaction.member.voice.channelId ||
+				interaction.member.voice.channelId !== queue[guildId].voiceChannel
+			) {
 				const noValidVCEmbed = new EmbedBuilder().setColor(config.config.color.info).setAuthor({
 					name: ` | 🚫 - Please join a valid voice channel first!`,
 					iconURL: `${interaction.user.avatarURL({})}`,
@@ -546,7 +559,10 @@ client.on("interactionCreate", async (interaction) => {
 		}
 		if (interaction.options.getSubcommand() === "shuffle") {
 			if (!queue[guildId]) queue.add(guildId);
-			if (!interaction.member.voice.channelId || interaction.member.voice.channelId !== queue[guildId].voiceChannel) {
+			if (
+				!interaction.member.voice.channelId ||
+				interaction.member.voice.channelId !== queue[guildId].voiceChannel
+			) {
 				const noValidVCEmbed = new EmbedBuilder().setColor(config.config.color.info).setAuthor({
 					name: ` | 🚫 - Please join a valid voice channel first!`,
 					iconURL: `${interaction.user.avatarURL({})}`,
@@ -669,7 +685,10 @@ client.on("interactionCreate", async (interaction) => {
 		const songs = await lyricsSearcher.songs.search(`${song}`);
 		try {
 			const target = await songs[0].lyrics();
-			const embed = new EmbedBuilder().setColor(config.config.color.info).setTitle("Lyrics").setDescription(util.cutString(target));
+			const embed = new EmbedBuilder()
+				.setColor(config.config.color.info)
+				.setTitle("Lyrics")
+				.setDescription(util.cutString(target));
 			await interaction.editReply({ embeds: [embed] });
 		} catch (err) {
 			await interaction.editReply("Sorry, but the lyric was not found.");
@@ -689,7 +708,10 @@ client.on("interactionCreate", async (interaction) => {
 	if (command === "playlist") {
 		await interaction.deferReply();
 		if (!queue[guildId]) queue.add(guildId);
-		if (!interaction.member.voice.channelId || interaction.member.voice.channelId !== queue[guildId].voiceChannel) {
+		if (
+			!interaction.member.voice.channelId ||
+			interaction.member.voice.channelId !== queue[guildId].voiceChannel
+		) {
 			const noValidVCEmbed = new EmbedBuilder().setColor(config.config.color.info).setAuthor({
 				name: ` | 🚫 - Please join a valid voice channel first!`,
 				iconURL: `${interaction.user.avatarURL({})}`,
@@ -753,20 +775,28 @@ client.on("interactionCreate", async (interaction) => {
 			if (interaction.options.getBoolean("autoreplay")) {
 				queue[guildId].autoReplay = true;
 				queue[guildId].autoPlay = false;
-				await interaction.editReply("From now on, the queue will be automatically replayed when it has finished.");
+				await interaction.editReply(
+					"From now on, the queue will be automatically replayed when it has finished."
+				);
 			} else {
 				queue[guildId].autoReplay = false;
-				await interaction.editReply("From now on, the queue will not be automatically replayed when it has finished.");
+				await interaction.editReply(
+					"From now on, the queue will not be automatically replayed when it has finished."
+				);
 			}
 		}
 		if (interaction.options.getSubcommand() === "autoplay") {
 			if (interaction.options.getBoolean("autoplay")) {
 				queue[guildId].autoPlay = true;
 				queue[guildId].autoRelay = false;
-				await interaction.editReply("From now on, a song or something will be played when the queue has finished.");
+				await interaction.editReply(
+					"From now on, a song or something will be played when the queue has finished."
+				);
 			} else {
 				queue[guildId].autoPlay = false;
-				await interaction.editReply("From now on, a song or something will be played when the queue has finished.");
+				await interaction.editReply(
+					"From now on, a song or something will be played when the queue has finished."
+				);
 			}
 		}
 		return;
@@ -787,6 +817,28 @@ client.on("interactionCreate", async (interaction) => {
 		queue[guildId].player.setFilters(filter);
 		await interaction.editReply("Set vibrato filter");
 	}
+	if (command === "gpt") {
+		await interaction.deferReply();
+		const option = interaction.options.getString("gpt");
+		if (option === "reset") {
+			try {
+				delete gptQueue[guildId];
+				return;
+			} catch (err) {}
+		}
+		if (!gptQueue[guildId]) {
+			gptQueue.add(guildId, Number(option));
+			await interaction.editReply(`Set ${option} on this channel.`);
+			return;
+		} else {
+			try {
+				delete gptQueue[guildId];
+			} catch (err) {}
+			gptQueue.add(guildId, option);
+			await interaction.editReply(`Set ${option} on this channel.`);
+			return;
+		}
+	}
 });
 
 async function startPlay(guildId) {
@@ -805,17 +857,45 @@ function addEventListenerToPlayer(guildId) {
 		queue[guildId].player.position = 0;
 		const embed = embeds.generateStartEmbed(queue, guildId, 0, config);
 		const btn = new ActionRowBuilder().addComponents(
-			new ButtonBuilder().setCustomId("pause").setLabel("Pause").setEmoji("1117306256781230191").setStyle(ButtonStyle.Secondary),
-			new ButtonBuilder().setCustomId("stop").setLabel("Stop").setEmoji("1100927733116186694").setStyle(ButtonStyle.Danger),
-			new ButtonBuilder().setCustomId("back").setLabel("Back").setEmoji("1117303043743039599").setStyle(ButtonStyle.Secondary),
-			new ButtonBuilder().setCustomId("skip").setLabel("Skip").setEmoji("1117303289365659648").setStyle(ButtonStyle.Secondary),
+			new ButtonBuilder()
+				.setCustomId("pause")
+				.setLabel("Pause")
+				.setEmoji("1117306256781230191")
+				.setStyle(ButtonStyle.Secondary),
+			new ButtonBuilder()
+				.setCustomId("stop")
+				.setLabel("Stop")
+				.setEmoji("1100927733116186694")
+				.setStyle(ButtonStyle.Danger),
+			new ButtonBuilder()
+				.setCustomId("back")
+				.setLabel("Back")
+				.setEmoji("1117303043743039599")
+				.setStyle(ButtonStyle.Secondary),
+			new ButtonBuilder()
+				.setCustomId("skip")
+				.setLabel("Skip")
+				.setEmoji("1117303289365659648")
+				.setStyle(ButtonStyle.Secondary),
 			new ButtonBuilder().setCustomId("addR").setLabel("Add Relate").setStyle(ButtonStyle.Secondary)
 		);
 		const subBtn = new ActionRowBuilder().addComponents(
-			new ButtonBuilder().setCustomId("volumeDown").setLabel("Down").setEmoji("1117303628349313035").setStyle(ButtonStyle.Secondary),
-			new ButtonBuilder().setCustomId("volumeUp").setLabel("Up").setEmoji("1117304554216767558").setStyle(ButtonStyle.Secondary),
+			new ButtonBuilder()
+				.setCustomId("volumeDown")
+				.setLabel("Down")
+				.setEmoji("1117303628349313035")
+				.setStyle(ButtonStyle.Secondary),
+			new ButtonBuilder()
+				.setCustomId("volumeUp")
+				.setLabel("Up")
+				.setEmoji("1117304554216767558")
+				.setStyle(ButtonStyle.Secondary),
 			new ButtonBuilder().setCustomId("lyric").setLabel("Lyric").setStyle(ButtonStyle.Secondary),
-			new ButtonBuilder().setCustomId("queue").setLabel("Queue").setEmoji("1117304805237465138").setStyle(ButtonStyle.Secondary)
+			new ButtonBuilder()
+				.setCustomId("queue")
+				.setLabel("Queue")
+				.setEmoji("1117304805237465138")
+				.setStyle(ButtonStyle.Secondary)
 		);
 		const seekBtn = new ActionRowBuilder().addComponents(
 			new ButtonBuilder().setCustomId("30m").setLabel("-30s").setStyle(ButtonStyle.Secondary),
@@ -836,17 +916,45 @@ function addEventListenerToPlayer(guildId) {
 	queue[guildId].player.on("resumed", async function (s) {
 		const embed = embeds.generateUnpauseEmbed(queue, guildId, 0, config);
 		const btn = new ActionRowBuilder().addComponents(
-			new ButtonBuilder().setCustomId("pause").setLabel("Pause").setEmoji("1117306256781230191").setStyle(ButtonStyle.Secondary),
-			new ButtonBuilder().setCustomId("stop").setLabel("Stop").setEmoji("1100927733116186694").setStyle(ButtonStyle.Danger),
-			new ButtonBuilder().setCustomId("back").setLabel("Back").setEmoji("1117303043743039599").setStyle(ButtonStyle.Secondary),
-			new ButtonBuilder().setCustomId("skip").setLabel("Skip").setEmoji("1117303289365659648").setStyle(ButtonStyle.Secondary),
+			new ButtonBuilder()
+				.setCustomId("pause")
+				.setLabel("Pause")
+				.setEmoji("1117306256781230191")
+				.setStyle(ButtonStyle.Secondary),
+			new ButtonBuilder()
+				.setCustomId("stop")
+				.setLabel("Stop")
+				.setEmoji("1100927733116186694")
+				.setStyle(ButtonStyle.Danger),
+			new ButtonBuilder()
+				.setCustomId("back")
+				.setLabel("Back")
+				.setEmoji("1117303043743039599")
+				.setStyle(ButtonStyle.Secondary),
+			new ButtonBuilder()
+				.setCustomId("skip")
+				.setLabel("Skip")
+				.setEmoji("1117303289365659648")
+				.setStyle(ButtonStyle.Secondary),
 			new ButtonBuilder().setCustomId("addR").setLabel("Add Relate").setStyle(ButtonStyle.Secondary)
 		);
 		const subBtn = new ActionRowBuilder().addComponents(
-			new ButtonBuilder().setCustomId("volumeDown").setLabel("Down").setEmoji("1117303628349313035").setStyle(ButtonStyle.Secondary),
-			new ButtonBuilder().setCustomId("volumeUp").setLabel("Up").setEmoji("1117304554216767558").setStyle(ButtonStyle.Secondary),
+			new ButtonBuilder()
+				.setCustomId("volumeDown")
+				.setLabel("Down")
+				.setEmoji("1117303628349313035")
+				.setStyle(ButtonStyle.Secondary),
+			new ButtonBuilder()
+				.setCustomId("volumeUp")
+				.setLabel("Up")
+				.setEmoji("1117304554216767558")
+				.setStyle(ButtonStyle.Secondary),
 			new ButtonBuilder().setCustomId("lyric").setLabel("Lyric").setStyle(ButtonStyle.Secondary),
-			new ButtonBuilder().setCustomId("queue").setLabel("Queue").setEmoji("1117304805237465138").setStyle(ButtonStyle.Secondary)
+			new ButtonBuilder()
+				.setCustomId("queue")
+				.setLabel("Queue")
+				.setEmoji("1117304805237465138")
+				.setStyle(ButtonStyle.Secondary)
 		);
 		const seekBtn = new ActionRowBuilder().addComponents(
 			new ButtonBuilder().setCustomId("30m").setLabel("-30s").setStyle(ButtonStyle.Secondary),
@@ -867,17 +975,45 @@ function addEventListenerToPlayer(guildId) {
 	queue[guildId].player.on("paused", async function (s) {
 		const embed = embeds.generatePauseEmbed(queue, guildId, 0, config);
 		const btn = new ActionRowBuilder().addComponents(
-			new ButtonBuilder().setCustomId("unpause").setLabel("Resume").setEmoji("1117306258077257791").setStyle(ButtonStyle.Secondary),
-			new ButtonBuilder().setCustomId("stop").setLabel("Stop").setEmoji("1100927733116186694").setStyle(ButtonStyle.Danger),
-			new ButtonBuilder().setCustomId("back").setLabel("Back").setEmoji("1117303043743039599").setStyle(ButtonStyle.Secondary),
-			new ButtonBuilder().setCustomId("skip").setLabel("Skip").setEmoji("1117303289365659648").setStyle(ButtonStyle.Secondary),
+			new ButtonBuilder()
+				.setCustomId("unpause")
+				.setLabel("Resume")
+				.setEmoji("1117306258077257791")
+				.setStyle(ButtonStyle.Secondary),
+			new ButtonBuilder()
+				.setCustomId("stop")
+				.setLabel("Stop")
+				.setEmoji("1100927733116186694")
+				.setStyle(ButtonStyle.Danger),
+			new ButtonBuilder()
+				.setCustomId("back")
+				.setLabel("Back")
+				.setEmoji("1117303043743039599")
+				.setStyle(ButtonStyle.Secondary),
+			new ButtonBuilder()
+				.setCustomId("skip")
+				.setLabel("Skip")
+				.setEmoji("1117303289365659648")
+				.setStyle(ButtonStyle.Secondary),
 			new ButtonBuilder().setCustomId("addR").setLabel("Add Relate").setStyle(ButtonStyle.Secondary)
 		);
 		const subBtn = new ActionRowBuilder().addComponents(
-			new ButtonBuilder().setCustomId("volumeDown").setLabel("Down").setEmoji("1117303628349313035").setStyle(ButtonStyle.Secondary),
-			new ButtonBuilder().setCustomId("volumeUp").setLabel("Up").setEmoji("1117304554216767558").setStyle(ButtonStyle.Secondary),
+			new ButtonBuilder()
+				.setCustomId("volumeDown")
+				.setLabel("Down")
+				.setEmoji("1117303628349313035")
+				.setStyle(ButtonStyle.Secondary),
+			new ButtonBuilder()
+				.setCustomId("volumeUp")
+				.setLabel("Up")
+				.setEmoji("1117304554216767558")
+				.setStyle(ButtonStyle.Secondary),
 			new ButtonBuilder().setCustomId("lyric").setLabel("Lyric").setStyle(ButtonStyle.Secondary),
-			new ButtonBuilder().setCustomId("queue").setLabel("Queue").setEmoji("1117304805237465138").setStyle(ButtonStyle.Secondary)
+			new ButtonBuilder()
+				.setCustomId("queue")
+				.setLabel("Queue")
+				.setEmoji("1117304805237465138")
+				.setStyle(ButtonStyle.Secondary)
 		);
 		const seekBtn = new ActionRowBuilder().addComponents(
 			new ButtonBuilder().setCustomId("30m").setLabel("-30s").setStyle(ButtonStyle.Secondary),
@@ -909,16 +1045,22 @@ function addEventListenerToPlayer(guildId) {
 				const previous = queue[guildId].previous;
 				if (previous.data.info.sourceName === "spotify") {
 					const res = await spotifyClient.getRecommendations(previous.data.info.identifier);
-					const track = await queue[guildId].node.rest.resolve(`https://open.spotify.com/intl-ja/track/${res}`);
+					const track = await queue[guildId].node.rest.resolve(
+						`https://open.spotify.com/intl-ja/track/${res}`
+					);
 					queue[guildId].add(track.data, "Auto Recommendation");
 					queue[guildId].index++;
 					await queue[guildId].player.playTrack({
 						track: queue[guildId].queue[index].data.encoded,
 					});
 				} else {
-					const searchResult = await queue[guildId].node.rest.resolve(`ytsearch:${previous.data.info.author}`);
+					const searchResult = await queue[guildId].node.rest.resolve(
+						`ytsearch:${previous.data.info.author}`
+					);
 					if (!searchResult?.data.length) {
-						await queue[guildId].textChannel.send("Finished playing queue. I was not able to find any recommendation for you.");
+						await queue[guildId].textChannel.send(
+							"Finished playing queue. I was not able to find any recommendation for you."
+						);
 						return;
 					}
 					res = searchResult.data.shift();
@@ -944,17 +1086,45 @@ function addEventListenerToPlayer(guildId) {
 async function eventOnPaused(guildId) {
 	const embed = embeds.generatePauseEmbed(queue, guildId, 0, config);
 	const btn = new ActionRowBuilder().addComponents(
-		new ButtonBuilder().setCustomId("unpause").setLabel("Resume").setEmoji("1117306258077257791").setStyle(ButtonStyle.Secondary),
-		new ButtonBuilder().setCustomId("stop").setLabel("Stop").setEmoji("1100927733116186694").setStyle(ButtonStyle.Danger),
-		new ButtonBuilder().setCustomId("back").setLabel("Back").setEmoji("1117303043743039599").setStyle(ButtonStyle.Secondary),
-		new ButtonBuilder().setCustomId("skip").setLabel("Skip").setEmoji("1117303289365659648").setStyle(ButtonStyle.Secondary),
+		new ButtonBuilder()
+			.setCustomId("unpause")
+			.setLabel("Resume")
+			.setEmoji("1117306258077257791")
+			.setStyle(ButtonStyle.Secondary),
+		new ButtonBuilder()
+			.setCustomId("stop")
+			.setLabel("Stop")
+			.setEmoji("1100927733116186694")
+			.setStyle(ButtonStyle.Danger),
+		new ButtonBuilder()
+			.setCustomId("back")
+			.setLabel("Back")
+			.setEmoji("1117303043743039599")
+			.setStyle(ButtonStyle.Secondary),
+		new ButtonBuilder()
+			.setCustomId("skip")
+			.setLabel("Skip")
+			.setEmoji("1117303289365659648")
+			.setStyle(ButtonStyle.Secondary),
 		new ButtonBuilder().setCustomId("addR").setLabel("Add Relate").setStyle(ButtonStyle.Secondary)
 	);
 	const subBtn = new ActionRowBuilder().addComponents(
-		new ButtonBuilder().setCustomId("volumeDown").setLabel("Down").setEmoji("1117303628349313035").setStyle(ButtonStyle.Secondary),
-		new ButtonBuilder().setCustomId("volumeUp").setLabel("Up").setEmoji("1117304554216767558").setStyle(ButtonStyle.Secondary),
+		new ButtonBuilder()
+			.setCustomId("volumeDown")
+			.setLabel("Down")
+			.setEmoji("1117303628349313035")
+			.setStyle(ButtonStyle.Secondary),
+		new ButtonBuilder()
+			.setCustomId("volumeUp")
+			.setLabel("Up")
+			.setEmoji("1117304554216767558")
+			.setStyle(ButtonStyle.Secondary),
 		new ButtonBuilder().setCustomId("lyric").setLabel("Lyric").setStyle(ButtonStyle.Secondary),
-		new ButtonBuilder().setCustomId("queue").setLabel("Queue").setEmoji("1117304805237465138").setStyle(ButtonStyle.Secondary)
+		new ButtonBuilder()
+			.setCustomId("queue")
+			.setLabel("Queue")
+			.setEmoji("1117304805237465138")
+			.setStyle(ButtonStyle.Secondary)
 	);
 	const seekBtn = new ActionRowBuilder().addComponents(
 		new ButtonBuilder().setCustomId("30m").setLabel("-30s").setStyle(ButtonStyle.Secondary),
@@ -975,17 +1145,45 @@ async function eventOnPaused(guildId) {
 async function eventOnResumed(guildId) {
 	const embed = embeds.generateUnpauseEmbed(queue, guildId, 0, config);
 	const btn = new ActionRowBuilder().addComponents(
-		new ButtonBuilder().setCustomId("pause").setLabel("Pause").setEmoji("1117306256781230191").setStyle(ButtonStyle.Secondary),
-		new ButtonBuilder().setCustomId("stop").setLabel("Stop").setEmoji("1100927733116186694").setStyle(ButtonStyle.Danger),
-		new ButtonBuilder().setCustomId("back").setLabel("Back").setEmoji("1117303043743039599").setStyle(ButtonStyle.Secondary),
-		new ButtonBuilder().setCustomId("skip").setLabel("Skip").setEmoji("1117303289365659648").setStyle(ButtonStyle.Secondary),
+		new ButtonBuilder()
+			.setCustomId("pause")
+			.setLabel("Pause")
+			.setEmoji("1117306256781230191")
+			.setStyle(ButtonStyle.Secondary),
+		new ButtonBuilder()
+			.setCustomId("stop")
+			.setLabel("Stop")
+			.setEmoji("1100927733116186694")
+			.setStyle(ButtonStyle.Danger),
+		new ButtonBuilder()
+			.setCustomId("back")
+			.setLabel("Back")
+			.setEmoji("1117303043743039599")
+			.setStyle(ButtonStyle.Secondary),
+		new ButtonBuilder()
+			.setCustomId("skip")
+			.setLabel("Skip")
+			.setEmoji("1117303289365659648")
+			.setStyle(ButtonStyle.Secondary),
 		new ButtonBuilder().setCustomId("addR").setLabel("Add Relate").setStyle(ButtonStyle.Secondary)
 	);
 	const subBtn = new ActionRowBuilder().addComponents(
-		new ButtonBuilder().setCustomId("volumeDown").setLabel("Down").setEmoji("1117303628349313035").setStyle(ButtonStyle.Secondary),
-		new ButtonBuilder().setCustomId("volumeUp").setLabel("Up").setEmoji("1117304554216767558").setStyle(ButtonStyle.Secondary),
+		new ButtonBuilder()
+			.setCustomId("volumeDown")
+			.setLabel("Down")
+			.setEmoji("1117303628349313035")
+			.setStyle(ButtonStyle.Secondary),
+		new ButtonBuilder()
+			.setCustomId("volumeUp")
+			.setLabel("Up")
+			.setEmoji("1117304554216767558")
+			.setStyle(ButtonStyle.Secondary),
 		new ButtonBuilder().setCustomId("lyric").setLabel("Lyric").setStyle(ButtonStyle.Secondary),
-		new ButtonBuilder().setCustomId("queue").setLabel("Queue").setEmoji("1117304805237465138").setStyle(ButtonStyle.Secondary)
+		new ButtonBuilder()
+			.setCustomId("queue")
+			.setLabel("Queue")
+			.setEmoji("1117304805237465138")
+			.setStyle(ButtonStyle.Secondary)
 	);
 	const seekBtn = new ActionRowBuilder().addComponents(
 		new ButtonBuilder().setCustomId("30m").setLabel("-30s").setStyle(ButtonStyle.Secondary),
