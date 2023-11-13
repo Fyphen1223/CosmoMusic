@@ -9,9 +9,7 @@ const commands = [
 		.setName("play")
 		.setDescription("Play music")
 		.setDMPermission(false)
-		.addStringOption((option) =>
-			option.setName("query").setAutocomplete(true).setDescription("Keyword or URL of YouTube")
-		)
+		.addStringOption((option) => option.setName("query").setAutocomplete(true).setDescription("Keyword or URL of YouTube"))
 		.addBooleanOption((option) => option.setName("autoreplay").setDescription("Auto Replay")),
 	new SlashCommandBuilder().setName("pause").setDescription("Pause playing music").setDMPermission(false),
 	new SlashCommandBuilder().setName("unpause").setDescription("Unpause playing music").setDMPermission(false),
@@ -29,9 +27,7 @@ const commands = [
 					option.setName("query").setDescription("Query").setRequired(true).setAutocomplete(true)
 				)
 		)
-		.addSubcommand((subcommand) =>
-			subcommand.setName("clear").setDescription("Remove all music from the playlist")
-		)
+		.addSubcommand((subcommand) => subcommand.setName("clear").setDescription("Remove all music from the playlist"))
 		.addSubcommand((subcommand) => subcommand.setName("save").setDescription("Save current queue"))
 		.addSubcommand((subcommand) =>
 			subcommand
@@ -65,10 +61,7 @@ const commands = [
 				.setName("autoreplay")
 				.setDescription(`Enable or disable your guild's auto-replay`)
 				.addBooleanOption((option) =>
-					option
-						.setName("autoreplay")
-						.setDescription(`Enable or disable your guild's auto-replay`)
-						.setRequired(true)
+					option.setName("autoreplay").setDescription(`Enable or disable your guild's auto-replay`).setRequired(true)
 				)
 		)
 		.addSubcommand((subcommand) =>
@@ -76,10 +69,7 @@ const commands = [
 				.setName("autoplay")
 				.setDescription(`Enable or disable your guild's auto-play`)
 				.addBooleanOption((option) =>
-					option
-						.setName("autoplay")
-						.setDescription(`Enable or disable your guild's auto-play`)
-						.setRequired(true)
+					option.setName("autoplay").setDescription(`Enable or disable your guild's auto-play`).setRequired(true)
 				)
 		)
 		.addSubcommand((subcommand) =>
@@ -87,10 +77,7 @@ const commands = [
 				.setName("searchengine")
 				.setDescription(`Change your guild's default search enginge.`)
 				.addBooleanOption((option) =>
-					option
-						.setName("bool")
-						.setDescription(`Enable or disable your guild's use ytm`)
-						.setRequired(true)
+					option.setName("bool").setDescription(`Enable or disable your guild's use ytm`).setRequired(true)
 				)
 		),
 	new SlashCommandBuilder()
@@ -108,9 +95,7 @@ const commands = [
 	new SlashCommandBuilder()
 		.setName("seek")
 		.setDescription("Seek currently playing audio resource")
-		.addStringOption((option) =>
-			option.setName("seek").setDescription("Seek position ex. 2h11s").setRequired(true)
-		),
+		.addStringOption((option) => option.setName("seek").setDescription("Seek position ex. 2h11s").setRequired(true)),
 	new SlashCommandBuilder().setName("help").setDescription("Get help about this bot"),
 	new SlashCommandBuilder()
 		.setName("skipto")
@@ -154,8 +139,6 @@ const rest = new REST({ version: "10" }).setToken(config.bot.token);
 const reset = [];
 rest.put(Routes.applicationCommands(config.bot.applicationId), { body: commands })
 	.then((data) =>
-		console.log(
-			`Successfully registered ${data.length} application commands with ${(new Date() - start) / 1000}s`
-		)
+		console.log(`Successfully registered ${data.length} application commands with ${(new Date() - start) / 1000}s`)
 	)
 	.catch(console.error);
