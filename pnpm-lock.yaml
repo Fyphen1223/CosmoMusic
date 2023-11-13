@@ -6,8 +6,8 @@ settings:
 
 dependencies:
   '@discordjs/collection':
-    specifier: ^1.5.3
-    version: 1.5.3
+    specifier: ^2.0.0
+    version: 2.0.0
   axios:
     specifier: ^1.6.1
     version: 1.6.1
@@ -1092,7 +1092,6 @@ packages:
     name: shoukaku
     version: 4.0.0-dev
     engines: {node: '>=18.0.0', npm: '>=7.0.0'}
-    prepare: true
     requiresBuild: true
     dependencies:
       ws: 8.14.2
