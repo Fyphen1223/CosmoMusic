@@ -360,7 +360,9 @@ client.on("interactionCreate", async (interaction) => {
 		if (!queue[guildId]) queue.add(guildId);
 		if (!(await hasValidVC(interaction))) return;
 		if (queue[guildId].player.status !== "playing") {
-			await interaction.editReply("Sorry, the player is not playing any audio.");
+			await interaction.editReply({
+				embeds: [embeds.generateMessageEmbed(interaction, `Sorry, I am not playing any song in your server.`)],
+			});
 			return;
 		}
 		if (!queue[guildId].queue[queue[guildId].index].data.info.isSeekable) {
@@ -382,7 +384,9 @@ client.on("interactionCreate", async (interaction) => {
 		await interaction.deferReply();
 		if (!(await hasValidVC(interaction))) return;
 		if (queue[guildId].player.status !== "playing") {
-			await interaction.editReply("Sorry, the player is not playing any audio.");
+			await interaction.editReply({
+				embeds: [embeds.generateMessageEmbed(interaction, `Sorry, I am not playing any song in your server.`)],
+			});
 			return;
 		}
 		try {
@@ -399,7 +403,9 @@ client.on("interactionCreate", async (interaction) => {
 		await interaction.deferReply();
 		if (!(await hasValidVC(interaction))) return;
 		if (queue[guildId].player.status !== "playing") {
-			await interaction.editReply("Sorry, the player is not playing any audio.");
+			await interaction.editReply({
+				embeds: [embeds.generateMessageEmbed(interaction, `Sorry, I am not playing any song in your server.`)],
+			});
 			return;
 		}
 		try {
@@ -622,7 +628,9 @@ client.on("interactionCreate", async (interaction) => {
 		await interaction.deferReply();
 		if (!(await hasValidVC(interaction))) return;
 		if (queue[guildId].player.status !== "playing") {
-			await interaction.editReply("Sorry, the player is not playing any audio.");
+			await interaction.editReply({
+				embeds: [embeds.generateMessageEmbed(interaction, `Sorry, I am not playing any song in your server.`)],
+			});
 			return;
 		}
 		if (!queue[guildId].queue[queue[guildId].index].data.info.isSeekable) {
@@ -632,7 +640,7 @@ client.on("interactionCreate", async (interaction) => {
 		const current = queue[guildId].player.position;
 		const after = current + 30000;
 		if (after <= queue[guildId].queue[queue[guildId].index].data.length) {
-			await interaction.editReply("Sorry, you cannnot seek tover the duration of the resource.");
+			await interaction.editReply("Sorry, you cannnot seek to out of the range of duration of the resource.");
 			return;
 		}
 		queue[guildId].player.seekTo(after);
@@ -643,7 +651,9 @@ client.on("interactionCreate", async (interaction) => {
 		await interaction.deferReply();
 		if (!(await hasValidVC(interaction))) return;
 		if (queue[guildId].player.status !== "playing") {
-			await interaction.editReply("Sorry,the player is not playing any audio.");
+			await interaction.editReply({
+				embeds: [embeds.generateMessageEmbed(interaction, `Sorry, I am not playing any song in your server.`)],
+			});
 			return;
 		}
 		if (!queue[guildId].queue[queue[guildId].index].data.info.isSeekable) {
@@ -736,12 +746,16 @@ client.on("interactionCreate", async (interaction) => {
 		await interaction.deferReply();
 		if (!(await hasValidVC(interaction))) return;
 		if (queue[guildId].player.status !== "playing") {
-			await interaction.editReply("Sorry, the player is not playing any audio.");
+			await interaction.editReply({
+				embeds: [embeds.generateMessageEmbed(interaction, `Sorry, I am not playing any song in your server.`)],
+			});
 			return;
 		}
 		const position = interaction.options.getInteger("position");
 		if (queue[guildId].queue.length < position || position <= 0) {
-			await interaction.editReply("The position is invalid.");
+			await interaction.editReply({
+				embeds: [embeds.generateMessageEmbed(interaction, `The position is invalid.`)],
+			});
 			return;
 		}
 		queue[guildId].index = position - 1;
@@ -750,7 +764,7 @@ client.on("interactionCreate", async (interaction) => {
 		await queue[guildId].player.playTrack({
 			track: queue[guildId].queue[index].data.encoded,
 		});
-		await interaction.editReply(`Skip to ${position}`);
+		await interaction.editReply({ embeds: [embeds.generateMessageEmbed(interaction, `Skip to ${position}`)] });
 		return;
 	}
 	if (command === "config") {
@@ -800,6 +814,7 @@ client.on("interactionCreate", async (interaction) => {
 		if (option === "reset") {
 			try {
 				delete gptQueue[guildId];
+				await interaction.editReply("Reset GPT. The GPT will no longer answer messages in this channel.");
 				return;
 			} catch (err) {}
 		}
