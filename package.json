@@ -18,6 +18,6 @@
     "scripts": {
         "bot": "node index.js",
         "host": "node shards.js",
-        "commit": "git add . && git commit -m 'Commit'"
+        "commit": "git add . && git commit -m Commit && git push origin/main"
     }
 }
