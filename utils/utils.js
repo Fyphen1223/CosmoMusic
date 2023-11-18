@@ -25,7 +25,7 @@ class guildQueue {
     add(data, user) {
         let temp = {
             user: user,
-            data: data
+            data: data,
         };
         this.queue.push(temp);
         return;
@@ -44,7 +44,7 @@ class guildQueue {
     getTitles() {
         let i = 0;
         let result = [];
-        while ((i + 1) <= this.queue.length) {
+        while (i + 1 <= this.queue.length) {
             result.push(this.queue[i].data.info.title);
             i++;
         }
@@ -102,13 +102,13 @@ function timeStringToSeconds(duration) {
         }
 
         switch (unit) {
-            case 'h':
+            case "h":
                 totalSeconds += value * 3600;
                 break;
-            case 'm':
+            case "m":
                 totalSeconds += value * 60;
                 break;
-            case 's':
+            case "s":
                 totalSeconds += value;
                 break;
             default:
@@ -128,11 +128,16 @@ function formatTime(seconds) {
     return `${paddedHours}h${paddedMinutes}m${paddedSeconds}s`;
 }
 function array2Collection(messages) {
-    return new Collection(messages.slice().sort((a, b) => {
-        const a_id = BigInt(a.id);
-        const b_id = BigInt(b.id);
-        return (a_id > b_id ? 1 : (a_id === b_id ? 0 : -1));
-    }).map(e => [e.id, e]));
+    return new Collection(
+        messages
+            .slice()
+            .sort((a, b) => {
+                const a_id = BigInt(a.id);
+                const b_id = BigInt(b.id);
+                return a_id > b_id ? 1 : a_id === b_id ? 0 : -1;
+            })
+            .map((e) => [e.id, e])
+    );
 }
 function cutString(str) {
     if (str.length > 2000) {

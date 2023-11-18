@@ -475,10 +475,7 @@ client.on("interactionCreate", async (interaction) => {
         if (customId === "queue") {
             let content = "";
             if (queue[guildId]["queue"].length === 0) {
-                const embed = new EmbedBuilder()
-                    .setColor(config.config.color.info)
-                    .setTitle("Queue")
-                    .setDescription("No music added to the queue.");
+                const embed = new EmbedBuilder().setColor(config.config.color.info).setTitle("Queue").setDescription("No music added to the queue.");
                 await interaction.editReply({ embeds: [embed] });
             } else {
                 content = content + `📀 ${queue[guildId].queue[queue[guildId].index].data.info.title}`;
@@ -513,10 +510,7 @@ client.on("interactionCreate", async (interaction) => {
         if (interaction.options.getSubcommand() === "display") {
             let content = "";
             if (queue[guildId]["queue"].length === 0) {
-                const embed = new EmbedBuilder()
-                    .setColor(config.config.color.info)
-                    .setTitle("Queue")
-                    .setDescription("No music added to the queue.");
+                const embed = new EmbedBuilder().setColor(config.config.color.info).setTitle("Queue").setDescription("No music added to the queue.");
                 await interaction.editReply({ embeds: [embed] });
             } else {
                 content = content + `📀 ${queue[guildId].queue[queue[guildId].index].data.info.title}`;
@@ -683,10 +677,7 @@ client.on("interactionCreate", async (interaction) => {
         const songs = await lyricsSearcher.songs.search(`${song}`);
         try {
             const target = await songs[0].lyrics();
-            const embed = new EmbedBuilder()
-                .setColor(config.config.color.info)
-                .setTitle("Lyrics")
-                .setDescription(util.cutString(target));
+            const embed = new EmbedBuilder().setColor(config.config.color.info).setTitle("Lyrics").setDescription(util.cutString(target));
             await interaction.editReply({ embeds: [embed] });
         } catch (err) {
             await interaction.editReply("Sorry, but the lyric was not found.");
@@ -851,41 +842,17 @@ function addEventListenerToPlayer(guildId) {
         queue[guildId].player.position = 0;
         const embed = embeds.generateStartEmbed(queue, guildId, 0, config);
         const btn = new ActionRowBuilder().addComponents(
-            new ButtonBuilder()
-                .setCustomId("pause")
-                .setLabel("Pause")
-                .setEmoji("1117306256781230191")
-                .setStyle(ButtonStyle.Secondary),
+            new ButtonBuilder().setCustomId("pause").setLabel("Pause").setEmoji("1117306256781230191").setStyle(ButtonStyle.Secondary),
             new ButtonBuilder().setCustomId("stop").setLabel("Stop").setEmoji("1100927733116186694").setStyle(ButtonStyle.Danger),
-            new ButtonBuilder()
-                .setCustomId("back")
-                .setLabel("Back")
-                .setEmoji("1117303043743039599")
-                .setStyle(ButtonStyle.Secondary),
-            new ButtonBuilder()
-                .setCustomId("skip")
-                .setLabel("Skip")
-                .setEmoji("1117303289365659648")
-                .setStyle(ButtonStyle.Secondary),
+            new ButtonBuilder().setCustomId("back").setLabel("Back").setEmoji("1117303043743039599").setStyle(ButtonStyle.Secondary),
+            new ButtonBuilder().setCustomId("skip").setLabel("Skip").setEmoji("1117303289365659648").setStyle(ButtonStyle.Secondary),
             new ButtonBuilder().setCustomId("addR").setLabel("Add Relate").setStyle(ButtonStyle.Secondary)
         );
         const subBtn = new ActionRowBuilder().addComponents(
-            new ButtonBuilder()
-                .setCustomId("volumeDown")
-                .setLabel("Down")
-                .setEmoji("1117303628349313035")
-                .setStyle(ButtonStyle.Secondary),
-            new ButtonBuilder()
-                .setCustomId("volumeUp")
-                .setLabel("Up")
-                .setEmoji("1117304554216767558")
-                .setStyle(ButtonStyle.Secondary),
+            new ButtonBuilder().setCustomId("volumeDown").setLabel("Down").setEmoji("1117303628349313035").setStyle(ButtonStyle.Secondary),
+            new ButtonBuilder().setCustomId("volumeUp").setLabel("Up").setEmoji("1117304554216767558").setStyle(ButtonStyle.Secondary),
             new ButtonBuilder().setCustomId("lyric").setLabel("Lyric").setStyle(ButtonStyle.Secondary),
-            new ButtonBuilder()
-                .setCustomId("queue")
-                .setLabel("Queue")
-                .setEmoji("1117304805237465138")
-                .setStyle(ButtonStyle.Secondary)
+            new ButtonBuilder().setCustomId("queue").setLabel("Queue").setEmoji("1117304805237465138").setStyle(ButtonStyle.Secondary)
         );
         const seekBtn = new ActionRowBuilder().addComponents(
             new ButtonBuilder().setCustomId("30m").setLabel("-30s").setStyle(ButtonStyle.Secondary),
@@ -906,41 +873,17 @@ function addEventListenerToPlayer(guildId) {
     queue[guildId].player.on("resumed", async function (s) {
         const embed = embeds.generateUnpauseEmbed(queue, guildId, 0, config);
         const btn = new ActionRowBuilder().addComponents(
-            new ButtonBuilder()
-                .setCustomId("pause")
-                .setLabel("Pause")
-                .setEmoji("1117306256781230191")
-                .setStyle(ButtonStyle.Secondary),
+            new ButtonBuilder().setCustomId("pause").setLabel("Pause").setEmoji("1117306256781230191").setStyle(ButtonStyle.Secondary),
             new ButtonBuilder().setCustomId("stop").setLabel("Stop").setEmoji("1100927733116186694").setStyle(ButtonStyle.Danger),
-            new ButtonBuilder()
-                .setCustomId("back")
-                .setLabel("Back")
-                .setEmoji("1117303043743039599")
-                .setStyle(ButtonStyle.Secondary),
-            new ButtonBuilder()
-                .setCustomId("skip")
-                .setLabel("Skip")
-                .setEmoji("1117303289365659648")
-                .setStyle(ButtonStyle.Secondary),
+            new ButtonBuilder().setCustomId("back").setLabel("Back").setEmoji("1117303043743039599").setStyle(ButtonStyle.Secondary),
+            new ButtonBuilder().setCustomId("skip").setLabel("Skip").setEmoji("1117303289365659648").setStyle(ButtonStyle.Secondary),
             new ButtonBuilder().setCustomId("addR").setLabel("Add Relate").setStyle(ButtonStyle.Secondary)
         );
         const subBtn = new ActionRowBuilder().addComponents(
-            new ButtonBuilder()
-                .setCustomId("volumeDown")
-                .setLabel("Down")
-                .setEmoji("1117303628349313035")
-                .setStyle(ButtonStyle.Secondary),
-            new ButtonBuilder()
-                .setCustomId("volumeUp")
-                .setLabel("Up")
-                .setEmoji("1117304554216767558")
-                .setStyle(ButtonStyle.Secondary),
+            new ButtonBuilder().setCustomId("volumeDown").setLabel("Down").setEmoji("1117303628349313035").setStyle(ButtonStyle.Secondary),
+            new ButtonBuilder().setCustomId("volumeUp").setLabel("Up").setEmoji("1117304554216767558").setStyle(ButtonStyle.Secondary),
             new ButtonBuilder().setCustomId("lyric").setLabel("Lyric").setStyle(ButtonStyle.Secondary),
-            new ButtonBuilder()
-                .setCustomId("queue")
-                .setLabel("Queue")
-                .setEmoji("1117304805237465138")
-                .setStyle(ButtonStyle.Secondary)
+            new ButtonBuilder().setCustomId("queue").setLabel("Queue").setEmoji("1117304805237465138").setStyle(ButtonStyle.Secondary)
         );
         const seekBtn = new ActionRowBuilder().addComponents(
             new ButtonBuilder().setCustomId("30m").setLabel("-30s").setStyle(ButtonStyle.Secondary),
@@ -961,41 +904,17 @@ function addEventListenerToPlayer(guildId) {
     queue[guildId].player.on("paused", async function (s) {
         const embed = embeds.generatePauseEmbed(queue, guildId, 0, config);
         const btn = new ActionRowBuilder().addComponents(
-            new ButtonBuilder()
-                .setCustomId("unpause")
-                .setLabel("Resume")
-                .setEmoji("1117306258077257791")
-                .setStyle(ButtonStyle.Secondary),
+            new ButtonBuilder().setCustomId("unpause").setLabel("Resume").setEmoji("1117306258077257791").setStyle(ButtonStyle.Secondary),
             new ButtonBuilder().setCustomId("stop").setLabel("Stop").setEmoji("1100927733116186694").setStyle(ButtonStyle.Danger),
-            new ButtonBuilder()
-                .setCustomId("back")
-                .setLabel("Back")
-                .setEmoji("1117303043743039599")
-                .setStyle(ButtonStyle.Secondary),
-            new ButtonBuilder()
-                .setCustomId("skip")
-                .setLabel("Skip")
-                .setEmoji("1117303289365659648")
-                .setStyle(ButtonStyle.Secondary),
+            new ButtonBuilder().setCustomId("back").setLabel("Back").setEmoji("1117303043743039599").setStyle(ButtonStyle.Secondary),
+            new ButtonBuilder().setCustomId("skip").setLabel("Skip").setEmoji("1117303289365659648").setStyle(ButtonStyle.Secondary),
             new ButtonBuilder().setCustomId("addR").setLabel("Add Relate").setStyle(ButtonStyle.Secondary)
         );
         const subBtn = new ActionRowBuilder().addComponents(
-            new ButtonBuilder()
-                .setCustomId("volumeDown")
-                .setLabel("Down")
-                .setEmoji("1117303628349313035")
-                .setStyle(ButtonStyle.Secondary),
-            new ButtonBuilder()
-                .setCustomId("volumeUp")
-                .setLabel("Up")
-                .setEmoji("1117304554216767558")
-                .setStyle(ButtonStyle.Secondary),
+            new ButtonBuilder().setCustomId("volumeDown").setLabel("Down").setEmoji("1117303628349313035").setStyle(ButtonStyle.Secondary),
+            new ButtonBuilder().setCustomId("volumeUp").setLabel("Up").setEmoji("1117304554216767558").setStyle(ButtonStyle.Secondary),
             new ButtonBuilder().setCustomId("lyric").setLabel("Lyric").setStyle(ButtonStyle.Secondary),
-            new ButtonBuilder()
-                .setCustomId("queue")
-                .setLabel("Queue")
-                .setEmoji("1117304805237465138")
-                .setStyle(ButtonStyle.Secondary)
+            new ButtonBuilder().setCustomId("queue").setLabel("Queue").setEmoji("1117304805237465138").setStyle(ButtonStyle.Secondary)
         );
         const seekBtn = new ActionRowBuilder().addComponents(
             new ButtonBuilder().setCustomId("30m").setLabel("-30s").setStyle(ButtonStyle.Secondary),
@@ -1036,9 +955,7 @@ function addEventListenerToPlayer(guildId) {
                 } else {
                     const searchResult = await queue[guildId].node.rest.resolve(`ytsearch:${previous.data.info.author}`);
                     if (!searchResult?.data.length) {
-                        await queue[guildId].textChannel.send(
-                            "Finished playing queue. I was not able to find any recommendation for you."
-                        );
+                        await queue[guildId].textChannel.send("Finished playing queue. I was not able to find any recommendation for you.");
                         return;
                     }
                     res = searchResult.data.shift();
@@ -1064,27 +981,15 @@ function addEventListenerToPlayer(guildId) {
 async function eventOnPaused(guildId) {
     const embed = embeds.generatePauseEmbed(queue, guildId, 0, config);
     const btn = new ActionRowBuilder().addComponents(
-        new ButtonBuilder()
-            .setCustomId("unpause")
-            .setLabel("Resume")
-            .setEmoji("1117306258077257791")
-            .setStyle(ButtonStyle.Secondary),
+        new ButtonBuilder().setCustomId("unpause").setLabel("Resume").setEmoji("1117306258077257791").setStyle(ButtonStyle.Secondary),
         new ButtonBuilder().setCustomId("stop").setLabel("Stop").setEmoji("1100927733116186694").setStyle(ButtonStyle.Danger),
         new ButtonBuilder().setCustomId("back").setLabel("Back").setEmoji("1117303043743039599").setStyle(ButtonStyle.Secondary),
         new ButtonBuilder().setCustomId("skip").setLabel("Skip").setEmoji("1117303289365659648").setStyle(ButtonStyle.Secondary),
         new ButtonBuilder().setCustomId("addR").setLabel("Add Relate").setStyle(ButtonStyle.Secondary)
     );
     const subBtn = new ActionRowBuilder().addComponents(
-        new ButtonBuilder()
-            .setCustomId("volumeDown")
-            .setLabel("Down")
-            .setEmoji("1117303628349313035")
-            .setStyle(ButtonStyle.Secondary),
-        new ButtonBuilder()
-            .setCustomId("volumeUp")
-            .setLabel("Up")
-            .setEmoji("1117304554216767558")
-            .setStyle(ButtonStyle.Secondary),
+        new ButtonBuilder().setCustomId("volumeDown").setLabel("Down").setEmoji("1117303628349313035").setStyle(ButtonStyle.Secondary),
+        new ButtonBuilder().setCustomId("volumeUp").setLabel("Up").setEmoji("1117304554216767558").setStyle(ButtonStyle.Secondary),
         new ButtonBuilder().setCustomId("lyric").setLabel("Lyric").setStyle(ButtonStyle.Secondary),
         new ButtonBuilder().setCustomId("queue").setLabel("Queue").setEmoji("1117304805237465138").setStyle(ButtonStyle.Secondary)
     );
@@ -1107,27 +1012,15 @@ async function eventOnPaused(guildId) {
 async function eventOnResumed(guildId) {
     const embed = embeds.generateUnpauseEmbed(queue, guildId, 0, config);
     const btn = new ActionRowBuilder().addComponents(
-        new ButtonBuilder()
-            .setCustomId("pause")
-            .setLabel("Pause")
-            .setEmoji("1117306256781230191")
-            .setStyle(ButtonStyle.Secondary),
+        new ButtonBuilder().setCustomId("pause").setLabel("Pause").setEmoji("1117306256781230191").setStyle(ButtonStyle.Secondary),
         new ButtonBuilder().setCustomId("stop").setLabel("Stop").setEmoji("1100927733116186694").setStyle(ButtonStyle.Danger),
         new ButtonBuilder().setCustomId("back").setLabel("Back").setEmoji("1117303043743039599").setStyle(ButtonStyle.Secondary),
         new ButtonBuilder().setCustomId("skip").setLabel("Skip").setEmoji("1117303289365659648").setStyle(ButtonStyle.Secondary),
         new ButtonBuilder().setCustomId("addR").setLabel("Add Relate").setStyle(ButtonStyle.Secondary)
     );
     const subBtn = new ActionRowBuilder().addComponents(
-        new ButtonBuilder()
-            .setCustomId("volumeDown")
-            .setLabel("Down")
-            .setEmoji("1117303628349313035")
-            .setStyle(ButtonStyle.Secondary),
-        new ButtonBuilder()
-            .setCustomId("volumeUp")
-            .setLabel("Up")
-            .setEmoji("1117304554216767558")
-            .setStyle(ButtonStyle.Secondary),
+        new ButtonBuilder().setCustomId("volumeDown").setLabel("Down").setEmoji("1117303628349313035").setStyle(ButtonStyle.Secondary),
+        new ButtonBuilder().setCustomId("volumeUp").setLabel("Up").setEmoji("1117304554216767558").setStyle(ButtonStyle.Secondary),
         new ButtonBuilder().setCustomId("lyric").setLabel("Lyric").setStyle(ButtonStyle.Secondary),
         new ButtonBuilder().setCustomId("queue").setLabel("Queue").setEmoji("1117304805237465138").setStyle(ButtonStyle.Secondary)
     );
