@@ -7,6 +7,15 @@ const cookieParser = require("cookie-parser");
 const socketio = require("socket.io");
 const helmet = require("helmet");
 const config = require("./config.json");
+const util = require("./utils/utils.js");
+const RateLimit = require("express-rate-limit");
+const log = new util.logger();
+const apiClients = require('./utils/api-client.js');
+const discordUserClient = new apiClients.discordUserInfoClient({
+	clientId: config.bot.clientId,
+	clientSecret: config.bot.clientSecret,
+	url: config.config.dashboard.url
+});
 
 function startServer(boot) {
 	if (boot) {
@@ -25,7 +34,6 @@ function startServer(boot) {
 		app.use(sessions);
 		app.use(bodyParser.urlencoded({ extended: true }));
 		app.use(cookieParser());
-		const RateLimit = require("express-rate-limit");
 		const limiter = RateLimit({
 			windowMs: 1 * 60 * 1000,
 			max: 100,
@@ -53,7 +61,7 @@ function startServer(boot) {
 				res.set("Content-Type", "text/html");
 				res.send(fs.readFileSync("./web/login.html"));
 			});
-			app.post("/login", (req, res) => {});
+			app.post("/login", (req, res) => { });
 			app.get("/logout", (req, res) => {
 				req.session.destroy((err) => {
 					res.redirect("/");

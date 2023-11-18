@@ -816,7 +816,7 @@ client.on("interactionCreate", async (interaction) => {
 				delete gptQueue[guildId];
 				await interaction.editReply("Reset GPT. The GPT will no longer answer messages in this channel.");
 				return;
-			} catch (err) {}
+			} catch (err) { }
 		}
 		if (!gptQueue[guildId]) {
 			gptQueue.add(guildId, Number(option));
@@ -825,7 +825,7 @@ client.on("interactionCreate", async (interaction) => {
 		} else {
 			try {
 				delete gptQueue[guildId];
-			} catch (err) {}
+			} catch (err) { }
 			gptQueue.add(guildId, option);
 			await interaction.editReply(`Set ${option} on this channel.`);
 			return;

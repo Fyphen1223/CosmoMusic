@@ -21,6 +21,7 @@
         },
         "adminPort": 443,    
         "dashboard": {
+            "boot": false,
             "admin": {
                 "username": "admin",
                 "password": "password"
