@@ -62,3 +62,4 @@ dist
 *.pem
 /lavalink/application.yml
 /client.js
+/test/local-test.js

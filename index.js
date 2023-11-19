@@ -113,7 +113,7 @@ client.on("interactionCreate", async (interaction) => {
     }
     if (interaction.commandName === "play") {
         const focusedValue = interaction.options.getFocused();
-        const node = await shoukaku.getIdealNode();
+        const node = shoukaku.options.nodeResolver(shoukaku.nodes);
         const result = await node.rest.resolve(`${focusedValue}`);
         if (result.loadType == "empty") {
             try {
@@ -186,7 +186,7 @@ client.on("interactionCreate", async (interaction) => {
             await interaction.editReply({ embeds: [noValidVCEmbed] });
             return;
         }
-        if (!queue[guildId].node) queue[guildId].node = await shoukaku.getIdealNode();
+        if (!queue[guildId].node) queue[guildId].node = shoukaku.options.nodeResolver(shoukaku.nodes);
         const query = interaction.options.getString("query");
         const replay = interaction.options.getBoolean("autoreplay");
         if (replay) {
@@ -809,7 +809,7 @@ client.on("interactionCreate", async (interaction) => {
                 delete gptQueue[guildId];
                 await interaction.editReply("Reset GPT. The GPT will no longer answer messages in this channel.");
                 return;
-            } catch (err) {}
+            } catch (err) { }
         }
         if (!gptQueue[guildId]) {
             gptQueue.add(guildId, Number(option));
@@ -818,7 +818,7 @@ client.on("interactionCreate", async (interaction) => {
         } else {
             try {
                 delete gptQueue[guildId];
-            } catch (err) {}
+            } catch (err) { }
             gptQueue.add(guildId, option);
             await interaction.editReply(`Set ${option} on this channel.`);
             return;
