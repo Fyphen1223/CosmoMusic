@@ -1,23 +1,17 @@
 {
-    "dependencies": {
-        "@discordjs/collection": "^2.0.0",
-        "axios": "^1.6.2",
-        "body-parser": "^1.20.2",
-        "cookie-parser": "^1.4.6",
-        "discord.js": "^14.14.1",
-        "express": "^4.18.2",
-        "express-rate-limit": "^7.1.4",
-        "express-session": "^1.17.3",
-        "genius-lyrics": "^4.4.6",
-        "helmet": "^7.1.0",
-        "redis": "^4.6.10",
-        "shoukaku": "github:shipgirlproject/shoukaku",
-        "socket.io": "^4.7.2",
-        "undici": "^5.27.2"
-    },
-    "scripts": {
-        "bot": "node index.js",
-        "host": "node shards.js",
-        "commit": "git add . && git commit -m Commit"
-    }
+	"dependencies": {
+		"@discordjs/collection": "^2.0.0",
+		"axios": "^1.6.2",
+		"body-parser": "^1.20.2",
+		"cookie-parser": "^1.4.6",
+		"discord.js": "^14.14.1",
+		"express": "^4.18.2",
+		"express-rate-limit": "^7.1.4",
+		"express-session": "^1.17.3",
+		"genius-lyrics": "^4.4.6",
+		"helmet": "^7.1.0",
+		"shoukaku": "github:shipgirlproject/shoukaku",
+		"socket.io": "^4.7.2",
+		"undici": "^5.27.2"
+	}
 }

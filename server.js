@@ -12,7 +12,7 @@ const RateLimit = require("express-rate-limit");
 const log = new util.logger();
 const apiClients = require("./utils/api-client.js");
 const discordUserClient = new apiClients.discordUserInfoClient({
-    clientId: config.bot.clientId,
+    clientId: config.bot.applicationId,
     clientSecret: config.bot.clientSecret,
     url: config.config.dashboard.url,
 });
@@ -61,7 +61,7 @@ function startServer(boot) {
                 res.set("Content-Type", "text/html");
                 res.send(fs.readFileSync("./web/login.html"));
             });
-            app.post("/login", (req, res) => {});
+            app.post("/login", (req, res) => { });
             app.get("/logout", (req, res) => {
                 req.session.destroy((err) => {
                     res.redirect("/");
@@ -103,6 +103,7 @@ function startServer(boot) {
                         res.redirect("/");
                     });
                 } catch (error) {
+                    console.log(error.stack);
                     res.redirect("/login");
                     return;
                 }
