@@ -1,6 +1,6 @@
 # CosmoMusic
  
- The greatest discord music bot which provides superior music experience.
+ The greatest discord music bot which provides superior music experience and AI experience.
  
  Using [Lavalink](https://github.com/lavalink-devs/lavalink) v4 and [Shoukaku](https://github.com/Deivu/Shoukaku) Client.
 
@@ -100,6 +100,8 @@
 # 🧰 Feature
  
  -✅Play music from YouTube, SoundCloud, Spotify, YouTube Music, Deezer, Apple Music, and etc...
+
+ -✅Completely free to use AI chat system
  
  -✅Queue system
  
