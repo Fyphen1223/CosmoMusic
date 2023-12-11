@@ -24,9 +24,9 @@
    </picture> 
  </a>
 
- [![Stargazers repo roster for @Fyphen1223/CosmoMusic](https://reporoster.com/stars/Fyphen1223/CosmoMusic)](https://github.com/Fyphen1223/CosmoMusic/stargazers)
+ [![Stargazers repo roster for @Fyphen1223/CosmoMusic](https://reporoster.com/stars/dark/Fyphen1223/CosmoMusic)](https://github.com/Fyphen1223/CosmoMusic/stargazers)
 
- [![Forkers repo roster for @Fyphen1223/CosmoMusic](https://reporoster.com/forks/Fyphen1223/CosmoMusic)](https://github.com/Fyphen1223/CosmoMusic/network/members)
+ [![Forkers repo roster for @Fyphen1223/CosmoMusic](https://reporoster.com/forks/dark/Fyphen1223/CosmoMusic)](https://github.com/Fyphen1223/CosmoMusic/network/members)
 
 
 # 🖥️ Install on your device
