@@ -576,7 +576,6 @@ client.on("interactionCreate", async (interaction) => {
                     return;
                 }
                 queue[guildId].remove(index);
-                queue[guildId].index--;
                 await interaction.editReply(`Deleted ${query} from the queue.`);
                 if (queue[guildId].isEmpty()) {
                     queue[guildId].index = 0;
