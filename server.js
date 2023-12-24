@@ -103,7 +103,6 @@ function startServer(boot) {
 						res.redirect("/");
 					});
 				} catch (error) {
-					console.log(error.stack);
 					res.redirect("/login");
 					return;
 				}
