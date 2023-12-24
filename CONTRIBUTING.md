@@ -16,7 +16,7 @@ Please follow our guidelines to contribute.
 1. Use tab indent (4) instead of space indent.
 2. Add ;.
 
-# Commit message standard:
+# Commit message standard
 Change: change: message
 
 Feature: feat: message
