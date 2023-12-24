@@ -175,6 +175,15 @@ client.on("interactionCreate", async (interaction) => {
 	const customId = interaction.customId;
 	const guildId = interaction.guild.id.toString();
 	if (interaction.isAutocomplete()) return;
+	if (command === 'ping') {
+		await interaction.deferReply();
+		let ping = 'N/A';
+		if (queue[guildId]) {
+			ping = queue[guildId].player.ping;
+		}
+		await interaction.editReply(`Bot Ping: ${client.ws.ping}ms\nVoice Gateway Ping: ${ping}ms`);
+		return;
+	}
 	if (command === "play") {
 		await interaction.deferReply();
 		if (!queue[guildId]) queue.add(guildId);

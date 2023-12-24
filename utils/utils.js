@@ -12,7 +12,7 @@ class guildQueue {
 		this.id = id;
 	}
 	node = "";
-	player = "";
+	player = null;
 	textChannel = "";
 	voiceChannel = "";
 	queue = [];
