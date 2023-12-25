@@ -1,33 +1,37 @@
-const axios = require("axios");
+const { request } = require('undici');
 
 async function generate(prompt, model) {
-	let res = await axios({
-		method: "post",
-		url: `https://gpti.projectsrpp.repl.co/api/gpti`,
+	const res = await request('https://gpti.projectsrpp.repl.co/api/gpti', {
 		headers: {
-			"Content-Type": "application/json",
+			'Content-Type': 'application/json'
 		},
-		data: {
-			prompt: prompt,
-			model: model,
-			type: "json",
+        body: {
+			prompt,
+			model,
+			type: 'json'
 		},
+		method: 'POST'
 	});
-	if (res.data.code !== 200) {
-		res = await axios({
-			method: "post",
-			url: `https://gpti.projectsrpp.repl.co/api/gpti`,
+
+	const body = await res.body.json();
+
+	if (body.code !== 200) {
+		res = await request('https://gpti.projectsrpp.repl.co/api/gpti', {
 			headers: {
-				"Content-Type": "application/json",
+				'Content-Type': 'application/json'
 			},
-			data: {
+			body: {
 				prompt: prompt.slice(-20000),
-				model: model || "gpt-4-32k",
-				type: "json",
+				model: model || 'gpt-4-32k',
+				type: 'json'
 			},
+			method: 'POST'
 		});
 	}
-	return res.data.gpt;
+
+	return body.gpt;
 }
 
-module.exports = { generate };
+module.exports = {
+	generate
+};
