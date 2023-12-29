@@ -1,8 +1,8 @@
-const { channelGpt } = require("./gpt-client");
-const client = new channelGpt();
-async function main() {
-	console.log(await client.generate("おはようございます！"));
-	console.log(await client.generate("先程私はなんと言いましたか？"));
-}
+const { channelGpt } = require('./gpt-client');
 
-main();
+const client = new channelGpt();
+
+(async () => {
+	console.log(await client.generate('おはようございます！'));
+	console.log(await client.generate('先程私はなんと言いましたか？'));
+})()
