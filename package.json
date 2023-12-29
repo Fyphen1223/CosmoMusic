@@ -1,7 +1,7 @@
 {
 	"dependencies": {
 		"@discordjs/collection": "^2.0.0",
-		"axios": "^1.6.2",
+		"axios": "^1.6.3",
 		"body-parser": "^1.20.2",
 		"cookie-parser": "^1.4.6",
 		"discord.js": "^14.14.1",
