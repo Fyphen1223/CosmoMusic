@@ -87,10 +87,10 @@ class discordUserInfoClient {
 			}).toString(),
 			method: 'POST',
 		});
-
-		if (tokenResponseData.statusCode !== 200)
+		console.log(await tokenResponseData.body.json());
+		if (await tokenResponseData.statusCode !== 200) {
 			throw new Error('The access token was not generated.');
-
+		}
 		return await tokenResponseData.body.json();
 	};
 

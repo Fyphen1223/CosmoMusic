@@ -99,15 +99,14 @@ function startServer(boot) {
 				if (req.session.username) {
 					res.set('Content-Type', 'text/html');
 					res.send(fs.readFileSync('./web/user.html'));
-
 					return;
 				}
 
 				try {
 					const oauthData = await discordUserClient.getAccessToken(code);
+					console.log(oauthData);
 					req.session.regenerate(async (_err) => {
 						const userInfo = await discordUserClient.getUserInfo(oauthData);
-
 						req.session = {
 							...req.session,
 							accessToken: oauthData.access_token,
@@ -119,12 +118,11 @@ function startServer(boot) {
 							email: userInfo.email,
 							verified: userInfo.verified
 						};
-
-						res.redirect('/');
 					});
-				} catch (_err) {
+					res.redirect('/');
+				} catch (err) {
 					res.redirect('/login');
-
+					console.log(err.stack);
 					return;
 				}
 			});
