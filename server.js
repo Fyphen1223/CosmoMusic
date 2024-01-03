@@ -43,7 +43,6 @@ function startServer(boot) {
 			windowMs: 1 * 60 * 1000,
 			max: 100
 		}));
-		app.use(limiter);
 		app.use(helmet());
 		app.use(express.json());
 

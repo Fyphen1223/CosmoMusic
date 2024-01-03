@@ -34,7 +34,7 @@ const client = new discord.Client({
 		discord.GatewayIntentBits.GuildWebhooks,
 		discord.GatewayIntentBits.Guilds,
 		discord.GatewayIntentBits.MessageContent
-    ],
+	],
 	partials: [
 		discord.Partials.Channel,
 		discord.Partials.GuildMember,
@@ -43,13 +43,13 @@ const client = new discord.Client({
 		discord.Partials.Reaction,
 		discord.Partials.ThreadMember,
 		discord.Partials.User
-    ]
+	]
 });
 
 const lyricsSearcher = new Genius.Client(config.token.genius);
 const spotifyClient = new spotifyApiClient({
-    clientId: config.spotify.clientId,
-    clientSecret: config.spotify.clientSecret,
+	clientId: config.spotify.clientId,
+	clientSecret: config.spotify.clientSecret,
 });
 
 const gptQueue = new gpts();
@@ -115,7 +115,7 @@ client.on('interactionCreate', async (interaction) => {
 
 		try {
 			interaction.respond(filtered.map((choice) => ({ name: choice, value: choice })));
-		} catch {}
+		} catch { }
 
 		return;
 	}
@@ -130,8 +130,8 @@ client.on('interactionCreate', async (interaction) => {
 			const rateFilt = rated.filter((choice) => choice.startsWith(focusedValue));
 
 			interaction.respond(rateFilt.map((choice) => ({ name: choice, value: choice })));
-        }
-    }
+		}
+	}
 
 	if (interaction.commandName === 'play') {
 		const node = shoukaku.options.nodeResolver(shoukaku.nodes);
@@ -189,7 +189,7 @@ client.on('interactionCreate', async (interaction) => {
 				console.error('An expected error has occured.');
 			}
 		}
-    }
+	}
 });
 
 client.on('interactionCreate', async (interaction) => {
@@ -210,10 +210,10 @@ client.on('interactionCreate', async (interaction) => {
 					iconURL: interaction.user.avatarURL({})
 				});
 
-			await interaction.editReply({ embeds: [ noValidVCEmbed ] });
+			await interaction.editReply({ embeds: [noValidVCEmbed] });
 
 			return;
-        }
+		}
 
 		if (!queue[guildId]) queue.add(guildId);
 
@@ -222,10 +222,10 @@ client.on('interactionCreate', async (interaction) => {
 		if (!node) node = shoukaku.options.nodeResolver(shoukaku.nodes);
 
 		const query = interaction.options.getString('query');
-		const replay =  interaction.options.getBoolean('autoreplay');
+		const replay = interaction.options.getBoolean('autoreplay');
 
 		queue[guildId].autoReplay = replay;
- 
+
 		const me = await interaction.guild.members.me;
 		const voiceChannel = interaction.member.voice.channel;
 		const permission = voiceChannel.permissionsFor(me);
@@ -259,7 +259,7 @@ client.on('interactionCreate', async (interaction) => {
 					iconURL: interaction.user.avatarURL({})
 				});
 
-			await interaction.editReply({ embeds: [ joinedEmbed ] });
+			await interaction.editReply({ embeds: [joinedEmbed] });
 
 			queue[guildId].voiceChannel = interaction.member.voice.channelId;
 			queue[guildId].textChannel = interaction.channel;
@@ -399,7 +399,7 @@ client.on('interactionCreate', async (interaction) => {
 						iconURL: interaction.user.avatarURL({}),
 					});
 
-				await interaction.editReply({ embeds: [ resultEmbed ] });
+				await interaction.editReply({ embeds: [resultEmbed] });
 
 				if (queue[guildId].player.status === 'playing') return;
 
@@ -434,7 +434,7 @@ client.on('interactionCreate', async (interaction) => {
 				iconURL: interaction.user.avatarURL({})
 			});
 
-		await interaction.editReply({ embeds: [ resultEmbed ] });
+		await interaction.editReply({ embeds: [resultEmbed] });
 
 		if (queue[guildId].player.track) return;
 
@@ -604,7 +604,7 @@ client.on('interactionCreate', async (interaction) => {
 					iconURL: interaction.user.avatarURL({})
 				});
 
-			await interaction.editReply({ embeds: [ noValidVCEmbed ] });
+			await interaction.editReply({ embeds: [noValidVCEmbed] });
 
 			return;
 		}
@@ -614,11 +614,11 @@ client.on('interactionCreate', async (interaction) => {
 
 			if (queue[guildId].queue.length === 0) {
 				const embed = new discord.EmbedBuilder()
-				  .setColor(config.config.color.info)
-				  .setTitle('Queue')
-				  .setDescription('No music added to the queue.');
+					.setColor(config.config.color.info)
+					.setTitle('Queue')
+					.setDescription('No music added to the queue.');
 
-				await interaction.editReply({ embeds: [ embed ] });
+				await interaction.editReply({ embeds: [embed] });
 			} else {
 				content += `📀 ${queue[guildId].queue[queue[guildId].index].data.info.title}`;
 
@@ -631,7 +631,7 @@ client.on('interactionCreate', async (interaction) => {
 					.setTitle('Queue')
 					.setDescription(discord.codeBlock(util.formatString(content, 2000)));
 
-				await interaction.editReply({ embeds: [ embed ] });
+				await interaction.editReply({ embeds: [embed] });
 			}
 		}
 
@@ -663,7 +663,7 @@ client.on('interactionCreate', async (interaction) => {
 					.setTitle('Queue')
 					.setDescription('No music added to the queue.');
 
-				await interaction.editReply({ embeds: [ embed ] });
+				await interaction.editReply({ embeds: [embed] });
 			} else {
 				content += `📀 ${queue[guildId].queue[queue[guildId].index].data.info.title}`;
 
@@ -676,7 +676,7 @@ client.on('interactionCreate', async (interaction) => {
 					.setTitle('Queue')
 					.setDescription(discord.codeBlock(util.formatString(content, 2000)));
 
-				await interaction.editReply({ embeds: [ embed ] });
+				await interaction.editReply({ embeds: [embed] });
 			}
 		}
 
@@ -691,7 +691,7 @@ client.on('interactionCreate', async (interaction) => {
 						iconURL: interaction.user.avatarURL({})
 					});
 
-				await interaction.editReply({ embeds: [ noValidVCEmbed ] });
+				await interaction.editReply({ embeds: [noValidVCEmbed] });
 
 				return;
 			}
@@ -719,7 +719,7 @@ client.on('interactionCreate', async (interaction) => {
 						iconURL: interaction.user.avatarURL({})
 					});
 
-				await interaction.editReply({ embeds: [ noValidVCEmbed ] })
+				await interaction.editReply({ embeds: [noValidVCEmbed] })
 
 				return;
 			}
@@ -889,7 +889,7 @@ client.on('interactionCreate', async (interaction) => {
 				.setTitle('Lyrics')
 				.setDescription(util.cutString(target));
 
-			await interaction.editReply({ embeds: [ embed ] });
+			await interaction.editReply({ embeds: [embed] });
 		} catch (err) {
 			await interaction.editReply('Sorry, but the lyric was not found.');
 		}
@@ -922,7 +922,7 @@ client.on('interactionCreate', async (interaction) => {
 					iconURL: interaction.user.avatarURL({})
 				});
 
-			await interaction.editReply({ embeds: [ noValidVCEmbed ] });
+			await interaction.editReply({ embeds: [noValidVCEmbed] });
 
 			return;
 		}
@@ -1062,7 +1062,7 @@ client.on('interactionCreate', async (interaction) => {
 				delete gptQueue[guildId];
 
 				await interaction.editReply('Reset GPT. The GPT will no longer answer messages in this channel.');
-			} catch {}
+			} catch { }
 
 			return;
 		}
@@ -1130,8 +1130,8 @@ function addEventListenerToPlayer(guildId) {
 		);
 
 		const msg = await queue[guildId].textChannel.send({
-			embeds: [ embed ],
-			components: [ btn, subBtn, seekBtn ],
+			embeds: [embed],
+			components: [btn, subBtn, seekBtn],
 		});
 
 		try {
@@ -1168,8 +1168,8 @@ function addEventListenerToPlayer(guildId) {
 		);
 
 		const msg = await queue[guildId].textChannel.send({
-			embeds: [ embed ],
-			components: [ btn, subBtn, seekBtn ],
+			embeds: [embed],
+			components: [btn, subBtn, seekBtn],
 		});
 
 		try {
@@ -1206,8 +1206,8 @@ function addEventListenerToPlayer(guildId) {
 		);
 
 		const msg = await queue[guildId].textChannel.send({
-			embeds: [ embed ],
-			components: [ btn, subBtn, seekBtn ],
+			embeds: [embed],
+			components: [btn, subBtn, seekBtn],
 		});
 
 		try {
@@ -1301,8 +1301,8 @@ async function eventOnPaused(guildId) {
 	);
 
 	const msg = await queue[guildId].textChannel.send({
-		embeds: [ embed ],
-		components: [ btn, subBtn, seekBtn ],
+		embeds: [embed],
+		components: [btn, subBtn, seekBtn],
 	});
 
 	try {
@@ -1340,8 +1340,8 @@ async function eventOnResumed(guildId) {
 	);
 
 	const msg = await queue[guildId].textChannel.send({
-		embeds: [ embed ],
-		components: [ btn, subBtn, seekBtn ],
+		embeds: [embed],
+		components: [btn, subBtn, seekBtn],
 	});
 
 	try {
@@ -1368,7 +1368,7 @@ async function hasValidVC(interaction) {
 				iconURL: interaction.user.avatarURL({})
 			});
 
-		await interaction.editReply({ embeds: [ noValidVCEmbed ] });
+		await interaction.editReply({ embeds: [noValidVCEmbed] });
 
 		return false;
 	}
