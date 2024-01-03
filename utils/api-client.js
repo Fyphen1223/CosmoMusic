@@ -72,29 +72,29 @@ class discordUserInfoClient {
 		this.redirect_uri = config.url;
 	}
 
-	async getAccessToken(code) {
+	getAccessToken = async (code) => {
 		const tokenResponseData = await request('https://discord.com/api/oauth2/token', {
-			headers: {
-				'Content-Type': 'application/x-www-form-urlencoded'
-			},
+			method: 'POST',
 			body: new URLSearchParams({
 				client_id: this.clientId,
 				client_secret: this.clientSecret,
 				code,
 				grant_type: 'authorization_code',
 				redirect_uri: this.redirect_uri,
-				scope: 'identify',
+				scope: 'email identify',
 			}).toString(),
-			method: 'POST',
+			headers: {
+				'Content-Type': 'application/x-www-form-urlencoded'
+			}
 		});
-		console.log(await tokenResponseData.body.json());
-		if (await tokenResponseData.statusCode !== 200) {
+		const res = await tokenResponseData.body.json();
+		if (tokenResponseData.statusCode !== 200) {
 			throw new Error('The access token was not generated.');
 		}
-		return await tokenResponseData.body.json();
+		return res;
 	};
 
-	async getUserInfo(oauthData) {
+	getUserInfo = async (oauthData) => {
 		try {
 			const userResult = await request('https://discord.com/api/users/@me', {
 				headers: {

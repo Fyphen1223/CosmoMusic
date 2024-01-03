@@ -23,8 +23,7 @@ const discordUserClient = new apiClients.discordUserInfoClient({
 function startServer(boot) {
 	if (boot) {
 		const app = express();
-
-		const sessions = session({
+		const sess = {
 			secret: config.config.dashboard.cookieSecret,
 			resave: true,
 			saveUninitialized: true,
@@ -32,11 +31,10 @@ function startServer(boot) {
 			cookie: {
 				httpOnly: true,
 				secure: true,
-				maxAge: 60000,
+				maxAge: 600000,
 			}
-		});
-
-		app.use(sessions);
+		}
+		app.use(session(sess));
 		app.use(bodyParser.urlencoded({ extended: true }));
 		app.use(cookieParser());
 		app.use(RateLimit({
@@ -56,7 +54,7 @@ function startServer(boot) {
 		);
 
 		const io = new socketio.Server(server);
-		io.engine.use(sessions);
+		io.engine.use(session(sess));
 
 		server.listen(config.config.adminPort, () => {
 			log.ready(`Server started on ${config.config.adminPort}`);
@@ -95,7 +93,6 @@ function startServer(boot) {
 			app.get('/', async (req, res) => {
 				const params = req.query;
 				const code = params.code;
-
 				if (req.session.username) {
 					res.set('Content-Type', 'text/html');
 					res.send(fs.readFileSync('./web/user.html'));
@@ -104,25 +101,20 @@ function startServer(boot) {
 
 				try {
 					const oauthData = await discordUserClient.getAccessToken(code);
-					console.log(oauthData);
-					req.session.regenerate(async (_err) => {
+					req.session.regenerate(async (err) => {
 						const userInfo = await discordUserClient.getUserInfo(oauthData);
-						req.session = {
-							...req.session,
-							accessToken: oauthData.access_token,
-							refreshToken: oauthData.refresh_token,
-							username: userInfo.username,
-							id: userInfo.id,
-							avatar: userInfo.avatar,
-							discriminator: userInfo.discriminator,
-							email: userInfo.email,
-							verified: userInfo.verified
-						};
+						req.session.accessToken = oauthData.access_token;
+						req.session.refreshToken = oauthData.refresh_token;
+						req.session.username = userInfo.username;
+						req.session.id = userInfo.id;
+						req.session.avatar = userInfo.avatar;
+						req.session.discriminator = userInfo.discriminator;
+						req.session.email = userInfo.email;
+						req.session.verified = userInfo.verified;
+						res.redirect('/');
 					});
-					res.redirect('/');
 				} catch (err) {
 					res.redirect('/login');
-					console.log(err.stack);
 					return;
 				}
 			});
@@ -132,7 +124,6 @@ function startServer(boot) {
 
 		io.on('connection', (socket) => {
 			const session = socket.request.session;
-
 			socket.emit('info', {
 				username: session.username,
 				email: session.email
