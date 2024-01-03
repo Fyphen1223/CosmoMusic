@@ -23,7 +23,7 @@ const discordUserClient = new apiClients.discordUserInfoClient({
 function startServer(boot) {
 	if (boot) {
 		const app = express();
-		const sess = {
+		const sessions = session({
 			secret: config.config.dashboard.cookieSecret,
 			resave: true,
 			saveUninitialized: true,
@@ -31,10 +31,11 @@ function startServer(boot) {
 			cookie: {
 				httpOnly: true,
 				secure: true,
-				maxAge: 600000,
+				maxAge: 60000,
 			}
-		}
-		app.use(session(sess));
+		});
+
+		app.use(sessions);
 		app.use(bodyParser.urlencoded({ extended: true }));
 		app.use(cookieParser());
 		app.use(RateLimit({
@@ -54,7 +55,7 @@ function startServer(boot) {
 		);
 
 		const io = new socketio.Server(server);
-		io.engine.use(session(sess));
+		io.engine.use(sessions);
 
 		server.listen(config.config.adminPort, () => {
 			log.ready(`Server started on ${config.config.adminPort}`);
