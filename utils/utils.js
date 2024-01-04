@@ -20,9 +20,9 @@ class guildQueue {
 		this.autoPlay = false;
 		this.volume = 100;
 		this.previous = null;
-    }
+	}
 
-    add(data, user) {
+	add(data, user) {
 		this.queue.push({
 			user,
 			data
@@ -135,7 +135,7 @@ function array2Collection(messages) {
 				return a_id > b_id ? 1 : a_id === b_id ? 0 : -1;
 			})
 			.map((e) => [e.id, e])
-    );
+	);
 }
 
 function cutString(str) {

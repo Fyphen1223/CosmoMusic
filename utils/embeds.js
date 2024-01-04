@@ -3,9 +3,15 @@ const config = require('../config.json');
 
 const discord = require('discord.js');
 
-function _genericPlayerEmbed(queue, guildId, type) {
+function generateGenericEmbed(queue, guildId, type) {
 	if (!type || type === 0) {
 		const current = queue[guildId].queue[queue[guildId].index].data.info;
+		let requester = '';
+		if (queue[guildId].queue[queue[guildId].index].user === 'Auto Recommendation') {
+			requester = 'Auto Recommendation';
+		} else {
+			requester = `<@${queue[guildId].queue[queue[guildId].index].user.id}>`;
+		}
 		const embed = new discord.EmbedBuilder()
 			.setColor(config.config.color.info)
 			.addFields({
@@ -22,7 +28,7 @@ function _genericPlayerEmbed(queue, guildId, type) {
 				inline: true
 			}, {
 				name: 'Requested by',
-				value: queue[guildId].queue[queue[guildId].index].user.username,
+				value: requester,
 				inline: true
 			}, {
 				name: 'Volume',
@@ -34,21 +40,19 @@ function _genericPlayerEmbed(queue, guildId, type) {
 				inline: true
 			})
 			.setImage(current.artworkUrl);
-
 		return embed;
 	}
 }
 
-function generatePauseEmbed(queue, guildId, type) {
-	return _genericPlayerEmbed(queue, guildId, type);
-}
-
 function generateStartEmbed(queue, guildId, type) {
-	return _genericPlayerEmbed(queue, guildId, type);
+	return generateGenericEmbed(queue, guildId, type);
+}
+function generatePauseEmbed(queue, guildId, type) {
+	return generateGenericEmbed(queue, guildId, type);
 }
 
 function generateUnpauseEmbed(queue, guildId, type) {
-	return _genericPlayerEmbed(queue, guildId, type);
+	return generateGenericEmbed(queue, guildId, type);
 }
 
 function generateMessageEmbed(interaction, message) {
@@ -56,7 +60,7 @@ function generateMessageEmbed(interaction, message) {
 		.setColor(config.config.color.info)
 		.setAuthor({
 			name: message,
-			iconURL: interaction.user.avatarURL({})
+			iconURL: interaction.user.avatarURL()
 		});
 
 	return embed;

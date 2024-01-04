@@ -9,6 +9,7 @@ const { spotifyApiClient } = require('./utils/api-client.js');
 const { gpts } = require('./utils/gpt-client.js');
 
 const discord = require('discord.js');
+const { ButtonBuilder, ButtonStyle, ActionRowBuilder } = require('discord.js');
 const Genius = require('genius-lyrics');
 const { LLTurbo, Connectors } = require('llturbo');
 
@@ -216,11 +217,7 @@ client.on('interactionCreate', async (interaction) => {
 		}
 
 		if (!queue[guildId]) queue.add(guildId);
-
-		let node = queue[guildId].node;
-
-		if (!node) node = llturbo.options.nodeResolver(llturbo.nodes);
-
+		if (!queue[guildId].node) queue[guildId].node = llturbo.options.nodeResolver(llturbo.nodes);
 		const query = interaction.options.getString('query');
 		const replay = interaction.options.getBoolean('autoreplay');
 
@@ -363,7 +360,7 @@ client.on('interactionCreate', async (interaction) => {
 			return;
 		}
 
-		const result = await node.rest.resolve(query);
+		const result = await queue[guildId].node.rest.resolve(query);
 
 		let res = '';
 		switch (result.loadType) {
@@ -373,7 +370,7 @@ client.on('interactionCreate', async (interaction) => {
 				break;
 			}
 			case 'empty': {
-				const searchResult = await node.rest.resolve(`ytsearch:${query}`);
+				const searchResult = await queue[guildId].node.rest.resolve(`ytsearch:${query}`);
 
 				if (!searchResult?.data.length) {
 					await interaction.editReply('Sorry, I could not find any data.');
@@ -747,12 +744,13 @@ client.on('interactionCreate', async (interaction) => {
 				}
 
 				queue[guildId].remove(index);
+				if (index < queue[guildId].index) {
+					queue[guildId].index--;
+				}
 				await interaction.editReply(`Deleted ${query} from the queue.`);
-
 				if (queue[guildId].isEmpty()) {
 					queue[guildId].index = 0;
 					queue[guildId].suppressEnd = true;
-
 					queue[guildId].player.stopTrack();
 				}
 			}
@@ -1089,44 +1087,32 @@ async function startPlay(guildId) {
 	});
 }
 
-function _buttonBuilder(customId, label, emoji, style) {
-	const button = new discord.ButtonBuilder()
-		.setCustomId(customId)
-		.setLabel(label)
-		.setStyle(style);
-
-	if (emoji != '') button.setEmoji(emoji);
-
-	return button;
-}
-
 function addEventListenerToPlayer(guildId) {
 	queue[guildId].player.on('start', async () => {
 		queue[guildId].player.status = 'playing';
 		queue[guildId].player.setGlobalVolume(queue[guildId].volume);
 		queue[guildId].suppressEnd = false;
 		queue[guildId].player.position = 0;
-
-		const embed = embeds.generateStartEmbed(queue, guildId, 0, config);
+		const embed = embeds.generateStartEmbed(queue, guildId, 0);
 
 		const btn = new discord.ActionRowBuilder().addComponents(
-			_buttonBuilder('pause', 'Pause', '1117306256781230191', discord.ButtonStyle.Secondary),
-			_buttonBuilder('stop', 'Stop', '1100927733116186694', discord.ButtonStyle.Danger),
-			_buttonBuilder('back', 'Back', '1117303043743039599', discord.ButtonStyle.Secondary),
-			_buttonBuilder('skip', 'Skip', '1117303289365659648', discord.ButtonStyle.Secondary),
-			_buttonBuilder('addR', 'Add Relate', '', discord.ButtonStyle.Secondary)
+			new ButtonBuilder().setCustomId('pause').setLabel('Pause').setEmoji('1117306256781230191').setStyle(ButtonStyle.Secondary),
+			new ButtonBuilder().setCustomId('stop').setLabel('Stop').setEmoji('1100927733116186694').setStyle(ButtonStyle.Danger),
+			new ButtonBuilder().setCustomId('back').setLabel('Back').setEmoji('1117303043743039599').setStyle(ButtonStyle.Secondary),
+			new ButtonBuilder().setCustomId('skip').setLabel('Skip').setEmoji('1117303289365659648').setStyle(ButtonStyle.Secondary),
+			new ButtonBuilder().setCustomId('addR').setLabel('Add Relate').setStyle(ButtonStyle.Secondary)
 		);
 
 		const subBtn = new discord.ActionRowBuilder().addComponents(
-			_buttonBuilder('volumeDown', 'Down', '1117303628349313035', discord.ButtonStyle.Secondary),
-			_buttonBuilder('volumeUp', 'Up', '1117304554216767558', discord.ButtonStyle.Secondary),
-			_buttonBuilder('lyric', 'Lyric', '', discord.ButtonStyle.Secondary),
-			_buttonBuilder('queue', 'Queue', '1117304805237465138', discord.ButtonStyle.Secondary)
+			new ButtonBuilder().setCustomId('volumeDown').setLabel('Down').setEmoji('1117303628349313035').setStyle(ButtonStyle.Secondary),
+			new ButtonBuilder().setCustomId('volumeUp').setLabel('Up').setEmoji('1117304554216767558').setStyle(ButtonStyle.Secondary),
+			new ButtonBuilder().setCustomId('lyric').setLabel('Lyric').setStyle(ButtonStyle.Secondary),
+			new ButtonBuilder().setCustomId('queue').setLabel('Queue').setEmoji('1117304805237465138').setStyle(ButtonStyle.Secondary)
 		);
 
 		const seekBtn = new discord.ActionRowBuilder().addComponents(
-			_buttonBuilder('30m', '-30s', '', discord.ButtonStyle.Secondary),
-			_buttonBuilder('30p', '+30s', '', discord.ButtonStyle.Secondary)
+			new ButtonBuilder().setCustomId('30m').setLabel('-30s').setStyle(ButtonStyle.Secondary),
+			new ButtonBuilder().setCustomId('30p').setLabel('+30s').setStyle(ButtonStyle.Secondary)
 		);
 
 		const msg = await queue[guildId].textChannel.send({
@@ -1145,213 +1131,177 @@ function addEventListenerToPlayer(guildId) {
 		queue[guildId].panel = msg;
 	});
 
-	queue[guildId].player.on('resumed', async () => {
+	queue[guildId].player.on('resumed', async function (s) {
 		const embed = embeds.generateUnpauseEmbed(queue, guildId, 0, config);
-		const btn = new discord.ActionRowBuilder().addComponents(
-			_buttonBuilder('pause', 'Pause', '1117306256781230191', discord.ButtonStyle.Secondary),
-			_buttonBuilder('stop', 'Stop', '1100927733116186694', discord.ButtonStyle.Danger),
-			_buttonBuilder('back', 'Back', '1117303043743039599', discord.ButtonStyle.Secondary),
-			_buttonBuilder('skip', 'Skip', '1117303289365659648', discord.ButtonStyle.Secondary),
-			_buttonBuilder('addR', 'Add Relate', '', discord.ButtonStyle.Secondary)
+		const btn = new ActionRowBuilder().addComponents(
+			new ButtonBuilder().setCustomId('pause').setLabel('Pause').setEmoji('1117306256781230191').setStyle(ButtonStyle.Secondary),
+			new ButtonBuilder().setCustomId('stop').setLabel('Stop').setEmoji('1100927733116186694').setStyle(ButtonStyle.Danger),
+			new ButtonBuilder().setCustomId('back').setLabel('Back').setEmoji('1117303043743039599').setStyle(ButtonStyle.Secondary),
+			new ButtonBuilder().setCustomId('skip').setLabel('Skip').setEmoji('1117303289365659648').setStyle(ButtonStyle.Secondary),
+			new ButtonBuilder().setCustomId('addR').setLabel('Add Relate').setStyle(ButtonStyle.Secondary)
 		);
-
-		const subBtn = new discord.ActionRowBuilder().addComponents(
-			_buttonBuilder('volumeDown', 'Down', '1117303628349313035', discord.ButtonStyle.Secondary),
-			_buttonBuilder('volumeUp', 'Up', '1117304554216767558', discord.ButtonStyle.Secondary),
-			_buttonBuilder('lyric', 'Lyric', '', discord.ButtonStyle.Secondary),
-			_buttonBuilder('queue', 'Queue', '1117304805237465138', discord.ButtonStyle.Secondary)
+		const subBtn = new ActionRowBuilder().addComponents(
+			new ButtonBuilder().setCustomId('volumeDown').setLabel('Down').setEmoji('1117303628349313035').setStyle(ButtonStyle.Secondary),
+			new ButtonBuilder().setCustomId('volumeUp').setLabel('Up').setEmoji('1117304554216767558').setStyle(ButtonStyle.Secondary),
+			new ButtonBuilder().setCustomId('lyric').setLabel('Lyric').setStyle(ButtonStyle.Secondary),
+			new ButtonBuilder().setCustomId('queue').setLabel('Queue').setEmoji('1117304805237465138').setStyle(ButtonStyle.Secondary)
 		);
-
-		const seekBtn = new discord.ActionRowBuilder().addComponents(
-			_buttonBuilder('30m', '-30s', '', discord.ButtonStyle.Secondary),
-			_buttonBuilder('30p', '+30s', '', discord.ButtonStyle.Secondary)
+		const seekBtn = new ActionRowBuilder().addComponents(
+			new ButtonBuilder().setCustomId('30m').setLabel('-30s').setStyle(ButtonStyle.Secondary),
+			new ButtonBuilder().setCustomId('30p').setLabel('+30s').setStyle(ButtonStyle.Secondary)
 		);
-
 		const msg = await queue[guildId].textChannel.send({
 			embeds: [embed],
 			components: [btn, subBtn, seekBtn],
 		});
-
 		try {
 			await queue[guildId].panel.delete();
 		} catch (err) {
 			queue[guildId].panel = msg;
-
 			return;
 		}
-
 		queue[guildId].panel = msg;
 	});
 
-	queue[guildId].player.on('paused', async () => {
+	queue[guildId].player.on('paused', async function (s) {
 		const embed = embeds.generatePauseEmbed(queue, guildId, 0, config);
-		const btn = new discord.ActionRowBuilder().addComponents(
-			_buttonBuilder('unpause', 'Resume', '1117306258077257791', discord.ButtonStyle.Secondary),
-			_buttonBuilder('stop', 'Stop', '1100927733116186694', discord.ButtonStyle.Danger),
-			_buttonBuilder('back', 'Back', '1117303043743039599', discord.ButtonStyle.Secondary),
-			_buttonBuilder('skip', 'Skip', '1117303289365659648', discord.ButtonStyle.Secondary),
-			_buttonBuilder('addR', 'Add Relate', '', discord.ButtonStyle.Secondary)
+		const btn = new ActionRowBuilder().addComponents(
+			new ButtonBuilder().setCustomId('unpause').setLabel('Resume').setEmoji('1117306258077257791').setStyle(ButtonStyle.Secondary),
+			new ButtonBuilder().setCustomId('stop').setLabel('Stop').setEmoji('1100927733116186694').setStyle(ButtonStyle.Danger),
+			new ButtonBuilder().setCustomId('back').setLabel('Back').setEmoji('1117303043743039599').setStyle(ButtonStyle.Secondary),
+			new ButtonBuilder().setCustomId('skip').setLabel('Skip').setEmoji('1117303289365659648').setStyle(ButtonStyle.Secondary),
+			new ButtonBuilder().setCustomId('addR').setLabel('Add Relate').setStyle(ButtonStyle.Secondary)
 		);
-
-		const subBtn = new discord.ActionRowBuilder().addComponents(
-			_buttonBuilder('volumeDown', 'Down', '1117303628349313035', discord.ButtonStyle.Secondary),
-			_buttonBuilder('volumeUp', 'Up', '1117304554216767558', discord.ButtonStyle.Secondary),
-			_buttonBuilder('lyric', 'Lyric', '', discord.ButtonStyle.Secondary),
-			_buttonBuilder('queue', 'Queue', '1117304805237465138', discord.ButtonStyle.Secondary)
+		const subBtn = new ActionRowBuilder().addComponents(
+			new ButtonBuilder().setCustomId('volumeDown').setLabel('Down').setEmoji('1117303628349313035').setStyle(ButtonStyle.Secondary),
+			new ButtonBuilder().setCustomId('volumeUp').setLabel('Up').setEmoji('1117304554216767558').setStyle(ButtonStyle.Secondary),
+			new ButtonBuilder().setCustomId('lyric').setLabel('Lyric').setStyle(ButtonStyle.Secondary),
+			new ButtonBuilder().setCustomId('queue').setLabel('Queue').setEmoji('1117304805237465138').setStyle(ButtonStyle.Secondary)
 		);
-
-		const seekBtn = new discord.ActionRowBuilder().addComponents(
-			_buttonBuilder('30m', '-30s', '', discord.ButtonStyle.Secondary),
-			_buttonBuilder('30p', '+30s', '', discord.ButtonStyle.Secondary)
+		const seekBtn = new ActionRowBuilder().addComponents(
+			new ButtonBuilder().setCustomId('30m').setLabel('-30s').setStyle(ButtonStyle.Secondary),
+			new ButtonBuilder().setCustomId('30p').setLabel('+30s').setStyle(ButtonStyle.Secondary)
 		);
-
 		const msg = await queue[guildId].textChannel.send({
 			embeds: [embed],
 			components: [btn, subBtn, seekBtn],
 		});
-
 		try {
 			await queue[guildId].panel.delete();
 		} catch (err) {
 			queue[guildId].panel = msg;
-
 			return;
 		}
-
 		queue[guildId].panel = msg;
 	});
 
-	queue[guildId].player.on('end', async () => {
+	queue[guildId].player.on('end', async function (s) {
 		const index = queue[guildId].index + 1;
 		queue[guildId].previous = queue[guildId].queue[queue[guildId].index];
 		queue[guildId].player.status = 'finished';
-
 		if (queue[guildId].suppressEnd) return;
-
 		if (index === queue[guildId].queue.length) {
 			if (queue[guildId].autoReplay) {
 				await startPlay(guildId);
-
 				return;
 			}
-
 			if (queue[guildId].autoPlay) {
 				const previous = queue[guildId].previous;
-
 				if (previous.data.info.sourceName === 'spotify') {
 					const res = await spotifyClient.getRecommendations(previous.data.info.identifier);
 					const track = await queue[guildId].node.rest.resolve(`https://open.spotify.com/intl-ja/track/${res}`);
-
 					queue[guildId].add(track.data, 'Auto Recommendation');
 					queue[guildId].index++;
-
 					await queue[guildId].player.playTrack({
-						track: queue[guildId].queue[index].data.encoded
+						track: queue[guildId].queue[index].data.encoded,
 					});
 				} else {
 					const searchResult = await queue[guildId].node.rest.resolve(`ytsearch:${previous.data.info.author}`);
-
 					if (!searchResult?.data.length) {
 						await queue[guildId].textChannel.send('Finished playing queue. I was not able to find any recommendation for you.');
 						return;
 					}
-
 					res = searchResult.data.shift();
-
 					queue[guildId].add(res, 'Auto Recommendation');
 					queue[guildId].index++;
-
 					await queue[guildId].player.playTrack({
-						track: queue[guildId].queue[index].data.encoded
+						track: queue[guildId].queue[index].data.encoded,
 					});
 				}
 			} else {
 				await queue[guildId].textChannel.send('Finished playing queue.');
+				return;
 			}
 		} else {
 			queue[guildId].index++;
-
 			await queue[guildId].player.playTrack({
-				track: queue[guildId].queue[index].data.encoded
+				track: queue[guildId].queue[index].data.encoded,
 			});
+			return;
 		}
 	});
 }
 async function eventOnPaused(guildId) {
 	const embed = embeds.generatePauseEmbed(queue, guildId, 0, config);
-
-	const btn = new discord.ActionRowBuilder().addComponents(
-		_buttonBuilder('unpause', 'Resume', '1117306258077257791', discord.ButtonStyle.Secondary),
-		_buttonBuilder('stop', 'Stop', '1100927733116186694', discord.ButtonStyle.Danger),
-		_buttonBuilder('back', 'Back', '1117303043743039599', discord.ButtonStyle.Secondary),
-		_buttonBuilder('skip', 'Skip', '1117303289365659648', discord.ButtonStyle.Secondary),
-		_buttonBuilder('addR', 'Add Relate', '', discord.ButtonStyle.Secondary)
+	const btn = new ActionRowBuilder().addComponents(
+		new ButtonBuilder().setCustomId('unpause').setLabel('Resume').setEmoji('1117306258077257791').setStyle(ButtonStyle.Secondary),
+		new ButtonBuilder().setCustomId('stop').setLabel('Stop').setEmoji('1100927733116186694').setStyle(ButtonStyle.Danger),
+		new ButtonBuilder().setCustomId('back').setLabel('Back').setEmoji('1117303043743039599').setStyle(ButtonStyle.Secondary),
+		new ButtonBuilder().setCustomId('skip').setLabel('Skip').setEmoji('1117303289365659648').setStyle(ButtonStyle.Secondary),
+		new ButtonBuilder().setCustomId('addR').setLabel('Add Relate').setStyle(ButtonStyle.Secondary)
 	);
-
-	const subBtn = new discord.ActionRowBuilder().addComponents(
-		_buttonBuilder('volumeDown', 'Down', '1117303628349313035', discord.ButtonStyle.Secondary),
-		_buttonBuilder('volumeUp', 'Up', '1117304554216767558', discord.ButtonStyle.Secondary),
-		_buttonBuilder('lyric', 'Lyric', '', discord.ButtonStyle.Secondary),
-		_buttonBuilder('queue', 'Queue', '1117304805237465138', discord.ButtonStyle.Secondary)
+	const subBtn = new ActionRowBuilder().addComponents(
+		new ButtonBuilder().setCustomId('volumeDown').setLabel('Down').setEmoji('1117303628349313035').setStyle(ButtonStyle.Secondary),
+		new ButtonBuilder().setCustomId('volumeUp').setLabel('Up').setEmoji('1117304554216767558').setStyle(ButtonStyle.Secondary),
+		new ButtonBuilder().setCustomId('lyric').setLabel('Lyric').setStyle(ButtonStyle.Secondary),
+		new ButtonBuilder().setCustomId('queue').setLabel('Queue').setEmoji('1117304805237465138').setStyle(ButtonStyle.Secondary)
 	);
-
-	const seekBtn = new discord.ActionRowBuilder().addComponents(
-		_buttonBuilder('30m', '-30s', '', discord.ButtonStyle.Secondary),
-		_buttonBuilder('30p', '+30s', '', discord.ButtonStyle.Secondary)
+	const seekBtn = new ActionRowBuilder().addComponents(
+		new ButtonBuilder().setCustomId('30m').setLabel('-30s').setStyle(ButtonStyle.Secondary),
+		new ButtonBuilder().setCustomId('30p').setLabel('+30s').setStyle(ButtonStyle.Secondary)
 	);
-
 	const msg = await queue[guildId].textChannel.send({
 		embeds: [embed],
 		components: [btn, subBtn, seekBtn],
 	});
-
 	try {
 		await queue[guildId].panel.delete();
 	} catch (err) {
 		queue[guildId].panel = msg;
-
 		return;
 	}
-
 	queue[guildId].panel = msg;
 }
 
 async function eventOnResumed(guildId) {
 	const embed = embeds.generateUnpauseEmbed(queue, guildId, 0, config);
-
-	const btn = new discord.ActionRowBuilder().addComponents(
-		_buttonBuilder('pause', 'Pause', '1117306256781230191', discord.ButtonStyle.Secondary),
-		_buttonBuilder('stop', 'Stop', '1100927733116186694', discord.ButtonStyle.Danger),
-		_buttonBuilder('back', 'Back', '1117303043743039599', discord.ButtonStyle.Secondary),
-		_buttonBuilder('skip', 'Skip', '1117303289365659648', discord.ButtonStyle.Secondary),
-		_buttonBuilder('addR', 'Add Relate', '', discord.ButtonStyle.Secondary)
+	const btn = new ActionRowBuilder().addComponents(
+		new ButtonBuilder().setCustomId('pause').setLabel('Pause').setEmoji('1117306256781230191').setStyle(ButtonStyle.Secondary),
+		new ButtonBuilder().setCustomId('stop').setLabel('Stop').setEmoji('1100927733116186694').setStyle(ButtonStyle.Danger),
+		new ButtonBuilder().setCustomId('back').setLabel('Back').setEmoji('1117303043743039599').setStyle(ButtonStyle.Secondary),
+		new ButtonBuilder().setCustomId('skip').setLabel('Skip').setEmoji('1117303289365659648').setStyle(ButtonStyle.Secondary),
+		new ButtonBuilder().setCustomId('addR').setLabel('Add Relate').setStyle(ButtonStyle.Secondary)
 	);
-
-	const subBtn = new discord.ActionRowBuilder().addComponents(
-		_buttonBuilder('volumeDown', 'Down', '1117303628349313035', discord.ButtonStyle.Secondary),
-		_buttonBuilder('volumeUp', 'Up', '1117304554216767558', discord.ButtonStyle.Secondary),
-		_buttonBuilder('lyric', 'Lyric', '', discord.ButtonStyle.Secondary),
-		_buttonBuilder('queue', 'Queue', '1117304805237465138', discord.ButtonStyle.Secondary)
+	const subBtn = new ActionRowBuilder().addComponents(
+		new ButtonBuilder().setCustomId('volumeDown').setLabel('Down').setEmoji('1117303628349313035').setStyle(ButtonStyle.Secondary),
+		new ButtonBuilder().setCustomId('volumeUp').setLabel('Up').setEmoji('1117304554216767558').setStyle(ButtonStyle.Secondary),
+		new ButtonBuilder().setCustomId('lyric').setLabel('Lyric').setStyle(ButtonStyle.Secondary),
+		new ButtonBuilder().setCustomId('queue').setLabel('Queue').setEmoji('1117304805237465138').setStyle(ButtonStyle.Secondary)
 	);
-
-	const seekBtn = new discord.ActionRowBuilder().addComponents(
-		_buttonBuilder('30m', '-30s', '', discord.ButtonStyle.Secondary),
-		_buttonBuilder('30p', '+30s', '', discord.ButtonStyle.Secondary)
+	const seekBtn = new ActionRowBuilder().addComponents(
+		new ButtonBuilder().setCustomId('30m').setLabel('-30s').setStyle(ButtonStyle.Secondary),
+		new ButtonBuilder().setCustomId('30p').setLabel('+30s').setStyle(ButtonStyle.Secondary)
 	);
-
 	const msg = await queue[guildId].textChannel.send({
 		embeds: [embed],
 		components: [btn, subBtn, seekBtn],
 	});
-
 	try {
 		await queue[guildId].panel.delete();
 	} catch (err) {
 		queue[guildId].panel = msg;
-
 		return;
 	}
-
 	queue[guildId].panel = msg;
 }
 
