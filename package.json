@@ -10,7 +10,7 @@
 		"express-session": "^1.17.3",
 		"genius-lyrics": "^4.4.6",
 		"helmet": "^7.1.0",
-		"shoukaku": "github:Fyphen1223/Shoukaku",
+		"llturbo": "github:Fyphen1223/LLTurbo",
 		"socket.io": "^4.7.2",
 		"undici": "^6.2.1"
 	}

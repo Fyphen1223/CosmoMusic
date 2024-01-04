@@ -10,7 +10,7 @@ const { gpts } = require('./utils/gpt-client.js');
 
 const discord = require('discord.js');
 const Genius = require('genius-lyrics');
-const { Shoukaku, Connectors } = require('shoukaku');
+const { LLTurbo, Connectors } = require('llturbo');
 
 const start = new Date();
 if (config.config.console.consoleClear) console.clear();
@@ -54,7 +54,7 @@ const spotifyClient = new spotifyApiClient({
 
 const gptQueue = new gpts();
 
-const shoukakuOptions = {
+const llturboOptions = {
 	resume: true,
 	resumeTimeout: 0,
 	resumeByLibrary: true,
@@ -66,10 +66,10 @@ const shoukakuOptions = {
 	voiceConnectionTimeout: 3
 };
 
-const shoukaku = new Shoukaku(
+const llturbo = new LLTurbo(
 	new Connectors.DiscordJS(client),
 	config.lavalink,
-	shoukakuOptions
+	llturboOptions
 );
 const queue = new util.queue();
 const log = new util.logger();
@@ -78,7 +78,7 @@ if (config.config.dashboard.boot) server.startServer(true);
 
 const guildList = [];
 const guildNameList = [];
-client.shoukaku = shoukaku;
+client.llturbo = llturbo;
 
 client.on('ready', async (u) => {
 	log.ready(`Logged in as ${u.user.tag}`);
@@ -134,7 +134,7 @@ client.on('interactionCreate', async (interaction) => {
 	}
 
 	if (interaction.commandName === 'play') {
-		const node = shoukaku.options.nodeResolver(shoukaku.nodes);
+		const node = llturbo.options.nodeResolver(llturbo.nodes);
 		const result = await node.rest.resolve(focusedValue);
 
 		switch (result.loadType) {
@@ -177,12 +177,12 @@ client.on('interactionCreate', async (interaction) => {
 				if (!result?.data.length) return;
 
 				const list = [];
+				const urls = [];
 				for (let i = 0; i < 5 && i < result.data.length; i++) {
 					list.push(`${result.data[i].info.title}`);
 				}
 
 				await interaction.respond(list.map((choice) => ({ name: choice, value: choice })));
-
 				break;
 			}
 			case 'error': {
@@ -219,7 +219,7 @@ client.on('interactionCreate', async (interaction) => {
 
 		let node = queue[guildId].node;
 
-		if (!node) node = shoukaku.options.nodeResolver(shoukaku.nodes);
+		if (!node) node = llturbo.options.nodeResolver(llturbo.nodes);
 
 		const query = interaction.options.getString('query');
 		const replay = interaction.options.getBoolean('autoreplay');
@@ -244,7 +244,7 @@ client.on('interactionCreate', async (interaction) => {
 
 		// Join channel first or after stop command
 		if (!queue[guildId].voiceChannel && !query && queue[guildId].isEmpty()) {
-			queue[guildId].player = await shoukaku.joinVoiceChannel({
+			queue[guildId].player = await llturbo.joinVoiceChannel({
 				guildId,
 				channelId: interaction.member.voice.channelId,
 				shardId: 0
@@ -272,7 +272,7 @@ client.on('interactionCreate', async (interaction) => {
 		// Join and there is valid query
 		if (!queue[guildId].voiceChannel && query) {
 			try {
-				queue[guildId].player = await shoukaku.joinVoiceChannel({
+				queue[guildId].player = await llturbo.joinVoiceChannel({
 					guildId,
 					channelId: interaction.member.voice.channelId,
 					shardId: 0
@@ -310,7 +310,7 @@ client.on('interactionCreate', async (interaction) => {
 		if (queue[guildId].queue.length !== 0 && queue[guildId].player.status === 'finished' && !query) {
 			if (!queue[guildId].voiceChannel) {
 				try {
-					queue[guildId].player = await shoukaku.joinVoiceChannel({
+					queue[guildId].player = await llturbo.joinVoiceChannel({
 						guildId,
 						channelId: interaction.member.voice.channelId,
 						shardId: 0
@@ -338,7 +338,7 @@ client.on('interactionCreate', async (interaction) => {
 		if (queue[guildId].queue.length !== 0 && queue[guildId].player.status === 'finished' && query) {
 			if (!queue[guildId].voiceChannel) {
 				try {
-					queue[guildId].player = await shoukaku.joinVoiceChannel({
+					queue[guildId].player = await llturbo.joinVoiceChannel({
 						guildId,
 						channelId: interaction.member.voice.channelId,
 						shardId: 0
@@ -904,7 +904,7 @@ client.on('interactionCreate', async (interaction) => {
 		queue[guildId].textChannel = '';
 		queue[guildId].player.status = 'finished';
 
-		await shoukaku.leaveVoiceChannel(guildId);
+		await llturbo.leaveVoiceChannel(guildId);
 
 		await interaction.editReply('Stopped playing');
 	}
@@ -1376,9 +1376,9 @@ async function hasValidVC(interaction) {
 	return true;
 }
 
-shoukaku.on('error', (_, error) => log.error(error));
+llturbo.on('error', (_, error) => log.error(error));
 
-shoukaku.on('ready', async (_data) => {
+llturbo.on('ready', async (_data) => {
 	log.ready(`Ready to accept commands. Boot took ${(new Date() - start) / 1000}s`);
 
 	console.log(fs.readFileSync('./assets/logo.txt').toString());

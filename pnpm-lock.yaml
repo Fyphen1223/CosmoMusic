@@ -35,9 +35,9 @@ dependencies:
   helmet:
     specifier: ^7.1.0
     version: 7.1.0
-  shoukaku:
-    specifier: github:Fyphen1223/Shoukaku
-    version: github.com/Fyphen1223/Shoukaku/6c082639910b424adff0476cfd77b2eb42538ee2
+  llturbo:
+    specifier: github:Fyphen1223/LLTurbo
+    version: github.com/Fyphen1223/LLTurbo/5fab4786ee4cce4d6ce1931cb376c11c66a1110a
   socket.io:
     specifier: ^4.7.2
     version: 4.7.2
@@ -1037,9 +1037,9 @@ packages:
         optional: true
     dev: false
 
-  github.com/Fyphen1223/Shoukaku/6c082639910b424adff0476cfd77b2eb42538ee2:
-    resolution: {tarball: https://codeload.github.com/Fyphen1223/Shoukaku/tar.gz/6c082639910b424adff0476cfd77b2eb42538ee2}
-    name: shoukaku
+  github.com/Fyphen1223/LLTurbo/5fab4786ee4cce4d6ce1931cb376c11c66a1110a:
+    resolution: {tarball: https://codeload.github.com/Fyphen1223/LLTurbo/tar.gz/5fab4786ee4cce4d6ce1931cb376c11c66a1110a}
+    name: llturbo
     version: 4.0.1
     engines: {node: '>=18.0.0', npm: '>=7.0.0'}
     prepare: true
