@@ -1238,7 +1238,11 @@ function addEventListenerToPlayer(guildId) {
 					});
 				}
 			} else {
-				await queue[guildId].textChannel.send('Finished playing queue.');
+				try {
+					await queue[guildId].textChannel.send('Finished playing queue.');
+				} catch(err) {
+					return;
+				}
 				return;
 			}
 		} else {
