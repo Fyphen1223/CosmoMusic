@@ -1,5 +1,7 @@
 # CosmoMusic
- 
+
+[![DeepScan grade](https://deepscan.io/api/teams/23064/projects/26358/branches/836700/badge/grade.svg)](https://deepscan.io/dashboard#view=project&tid=23064&pid=26358&bid=836700)
+
  The greatest discord music bot which provides superior music experience and AI experience.
  
  Using [Lavalink](https://github.com/lavalink-devs/lavalink) v4 and [Shoukaku](https://github.com/Deivu/Shoukaku) Client.
