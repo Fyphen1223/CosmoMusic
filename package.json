@@ -12,6 +12,6 @@
 		"helmet": "^7.1.0",
 		"llturbo": "github:Fyphen1223/LLTurbo",
 		"socket.io": "^4.7.3",
-		"undici": "^6.4.0"
+		"undici": "^6.5.0"
 	}
 }
