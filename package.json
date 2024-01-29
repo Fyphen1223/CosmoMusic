@@ -7,7 +7,7 @@
 		"discord.js": "^14.14.1",
 		"express": "^4.18.2",
 		"express-rate-limit": "^7.1.5",
-		"express-session": "^1.17.3",
+		"express-session": "^1.18.0",
 		"genius-lyrics": "^4.4.6",
 		"helmet": "^7.1.0",
 		"llturbo": "github:Fyphen1223/LLTurbo",
