@@ -914,6 +914,7 @@ client.on('interactionCreate', async (interaction) => {
 		await llturbo.leaveVoiceChannel(guildId);
 
 		await interaction.editReply('Stopped playing');
+
 	}
 
 	else if (command === 'playlist') {
