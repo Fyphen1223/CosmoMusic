@@ -12,6 +12,6 @@
 		"helmet": "^7.1.0",
 		"shoukaku": "github:shipgirlproject/shoukaku",
 		"socket.io": "^4.7.5",
-		"undici": "^6.9.0"
+		"undici": "^6.10.2"
 	}
 }
