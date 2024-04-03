@@ -42,8 +42,8 @@ dependencies:
     specifier: ^4.7.5
     version: 4.7.5
   undici:
-    specifier: ^6.9.0
-    version: 6.9.0
+    specifier: ^6.11.1
+    version: 6.11.1
 
 packages:
 
@@ -955,8 +955,8 @@ packages:
       '@fastify/busboy': 2.1.0
     dev: false
 
-  /undici@6.9.0:
-    resolution: {integrity: sha512-XPWfXzJedevUziHwun70EKNvGnxv4CnfraFZ4f/JV01+fcvMYzHE26r/j8AY/9c/70nkN4B1zX7E2Oyuqwz4+Q==}
+  /undici@6.11.1:
+    resolution: {integrity: sha512-KyhzaLJnV1qa3BSHdj4AZ2ndqI0QWPxYzaIOio0WzcEJB9gvuysprJSLtpvc2D9mhR9jPDUk7xlJlZbH2KR5iw==}
     engines: {node: '>=18.0'}
     dev: false
 
@@ -1019,7 +1019,6 @@ packages:
     name: shoukaku
     version: 4.0.1
     engines: {node: '>=18.0.0', npm: '>=7.0.0'}
-    prepare: true
     requiresBuild: true
     dependencies:
       ws: 8.16.0
