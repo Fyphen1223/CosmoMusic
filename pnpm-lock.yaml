@@ -30,8 +30,8 @@ dependencies:
     specifier: ^1.18.0
     version: 1.18.0
   genius-lyrics:
-    specifier: ^4.4.6
-    version: 4.4.6
+    specifier: ^4.4.7
+    version: 4.4.7
   helmet:
     specifier: ^7.1.0
     version: 7.1.0
@@ -575,11 +575,11 @@ packages:
     resolution: {integrity: sha512-7XHNxH7qX9xG5mIwxkhumTox/MIRNcOgDrxWsMt2pAr23WHp6MrRlN7FBSFpCpr+oVO0F744iUgR82nJMfG2SA==}
     dev: false
 
-  /genius-lyrics@4.4.6:
-    resolution: {integrity: sha512-TeSF4qXwLm+Nl8wUX+WUTJlEhPBanMw9EWpIHE2a/Qs4y2NBK99AHYfZJc73H1HVkZj4zPfscuGWlkQbbh0pDA==}
+  /genius-lyrics@4.4.7:
+    resolution: {integrity: sha512-cgO5nSeFqtLZAUyWB+8XWMRBIRzPUSUC42N3CoDGRgKX1anGAyDUhM6/RVIJXCNnQa6XHZHswKcKgHaRiyl+GQ==}
     dependencies:
-      node-html-parser: 6.1.12
-      undici: 5.28.2
+      node-html-parser: 6.1.13
+      undici: 6.11.1
     dev: false
 
   /get-intrinsic@1.2.2:
@@ -718,8 +718,8 @@ packages:
     engines: {node: '>= 0.6'}
     dev: false
 
-  /node-html-parser@6.1.12:
-    resolution: {integrity: sha512-/bT/Ncmv+fbMGX96XG9g05vFt43m/+SYKIs9oAemQVYyVcZmDAI2Xq/SbNcpOA35eF0Zk2av3Ksf+Xk8Vt8abA==}
+  /node-html-parser@6.1.13:
+    resolution: {integrity: sha512-qIsTMOY4C/dAa5Q5vsobRpOOvPfC4pB61UVW2uSwZNUp0QU/jCekTal1vMmbO0DgdHeLUJpv/ARmDqErVxA3Sg==}
     dependencies:
       css-select: 5.1.0
       he: 1.2.0
@@ -938,13 +938,6 @@ packages:
 
   /undici@5.27.2:
     resolution: {integrity: sha512-iS857PdOEy/y3wlM3yRp+6SNQQ6xU0mmZcwRSriqk+et/cwWAtwmIGf6WkoDN2EK/AMdCO/dfXzIwi+rFMrjjQ==}
-    engines: {node: '>=14.0'}
-    dependencies:
-      '@fastify/busboy': 2.1.0
-    dev: false
-
-  /undici@5.28.2:
-    resolution: {integrity: sha512-wh1pHJHnUeQV5Xa8/kyQhO7WFa8M34l026L5P/+2TYiakvGy5Rdc8jWZVyG7ieht/0WgJLEd3kcU5gKx+6GC8w==}
     engines: {node: '>=14.0'}
     dependencies:
       '@fastify/busboy': 2.1.0
