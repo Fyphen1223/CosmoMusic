@@ -1,3 +1,7 @@
+# WARNING, PLEASE READ HERE
+Many issues like [this](https://github.com/lavalink-devs/Lavalink/issues/1030) are reporting unexpected playing error with LavaLink.
+Since this bot hardly depends on LavaLink, under some situation, this bot will not work properly as it intended to.
+
 # CosmoMusic
 
 [![DeepScan grade](https://deepscan.io/api/teams/23064/projects/26358/branches/836700/badge/grade.svg)](https://deepscan.io/dashboard#view=project&tid=23064&pid=26358&bid=836700)
