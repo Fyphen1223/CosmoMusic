@@ -42,8 +42,8 @@ dependencies:
     specifier: ^4.7.5
     version: 4.7.5
   undici:
-    specifier: ^6.12.0
-    version: 6.12.0
+    specifier: ^6.13.0
+    version: 6.13.0
 
 packages:
 
@@ -579,7 +579,7 @@ packages:
     resolution: {integrity: sha512-cgO5nSeFqtLZAUyWB+8XWMRBIRzPUSUC42N3CoDGRgKX1anGAyDUhM6/RVIJXCNnQa6XHZHswKcKgHaRiyl+GQ==}
     dependencies:
       node-html-parser: 6.1.13
-      undici: 6.12.0
+      undici: 6.13.0
     dev: false
 
   /get-intrinsic@1.2.2:
@@ -943,8 +943,8 @@ packages:
       '@fastify/busboy': 2.1.0
     dev: false
 
-  /undici@6.12.0:
-    resolution: {integrity: sha512-d87yk8lqSFUYtR5fTFe2frpkMIrUEz+lgoJmhcL+J3StVl+8fj8ytE4lLnJOTPCE12YbumNGzf4LYsQyusdV5g==}
+  /undici@6.13.0:
+    resolution: {integrity: sha512-Q2rtqmZWrbP8nePMq7mOJIN98M0fYvSgV89vwl/BQRT4mDOeY2GXZngfGpcBBhtky3woM7G24wZV3Q304Bv6cw==}
     engines: {node: '>=18.0'}
     dev: false
 
