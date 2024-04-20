@@ -35,12 +35,12 @@ dependencies:
   helmet:
     specifier: ^7.1.0
     version: 7.1.0
-  shoukaku:
-    specifier: github:shipgirlproject/shoukaku
-    version: github.com/shipgirlproject/shoukaku/e5ea077cb389015ea8d03085224d4bc03ba94a92
   socket.io:
     specifier: ^4.7.5
     version: 4.7.5
+  tsumi:
+    specifier: github:Fyphen1223/TsumiLink
+    version: github.com/Fyphen1223/TsumiLink/5d070ce1bf407ac201cbad72e55b55f884445d8d
   undici:
     specifier: ^6.13.0
     version: 6.13.0
@@ -1025,16 +1025,15 @@ packages:
         optional: true
     dev: false
 
-  github.com/shipgirlproject/shoukaku/e5ea077cb389015ea8d03085224d4bc03ba94a92:
-    resolution: {tarball: https://codeload.github.com/shipgirlproject/shoukaku/tar.gz/e5ea077cb389015ea8d03085224d4bc03ba94a92}
-    name: shoukaku
-    version: 4.0.1
-    engines: {node: '>=18.0.0', npm: '>=7.0.0'}
-    prepare: true
-    requiresBuild: true
+  github.com/Fyphen1223/TsumiLink/5d070ce1bf407ac201cbad72e55b55f884445d8d:
+    resolution: {tarball: https://codeload.github.com/Fyphen1223/TsumiLink/tar.gz/5d070ce1bf407ac201cbad72e55b55f884445d8d}
+    name: tsumi
+    version: 0.0.12
     dependencies:
+      axios: 1.6.8
       ws: 8.16.0
     transitivePeerDependencies:
       - bufferutil
+      - debug
       - utf-8-validate
     dev: false
