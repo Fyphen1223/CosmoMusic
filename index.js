@@ -11,7 +11,7 @@ const { gpts } = require("./utils/gpt-client.js");
 const discord = require("discord.js");
 const { ButtonBuilder, ButtonStyle, ActionRowBuilder } = require("discord.js");
 const Genius = require("genius-lyrics");
-const { Shoukaku, Connectors } = require("shoukaku");
+const { TsumiInstance, handleRaw } = require("tsumi");
 
 const start = new Date();
 if (config.config.console.consoleClear) console.clear();
@@ -47,19 +47,22 @@ const spotifyClient = new spotifyApiClient({
 
 const gptQueue = new gpts();
 
-const shoukakuOptions = {
-	resume: true,
-	resumeTimeout: 0,
-	resumeByLibrary: true,
-	reconnectTries: 3,
-	reconnectInterval: 100,
-	restTimeout: 5,
-	moveOnDisconnect: true,
-	userAgent: "Cosmo Music/0.0.1",
-	voiceConnectionTimeout: 3,
-};
+const tsumi = new TsumiInstance({
+	botId: config.bot.applicationId,
+	sendPayload: (guildId, payload) => {
+		client.guilds.cache.get(guildId).shard.send(payload);
+	},
+	userAgent: "Tsumi/0.0.2", //userAgent can be anything, but should be in this format: CLIENTNAME/VERSION
+});
 
-const shoukaku = new Shoukaku(new Connectors.DiscordJS(client), config.lavalink, shoukakuOptions);
+tsumi.addNode({
+	serverName: config.lavalink[0].name,
+	secure: config.lavalink[0].secure,
+	host: config.lavalink[0].url,
+	pass: config.lavalink[0].auth,
+	port: config.lavalink[0].port,
+});
+
 const queue = new util.queue();
 const log = new util.logger();
 
@@ -67,7 +70,11 @@ if (config.config.dashboard.boot) server.startServer(true);
 
 const guildList = [];
 const guildNameList = [];
-client.shoukaku = shoukaku;
+client.tsumi = tsumi;
+
+client.on("raw", async (data) => {
+	handleRaw(data);
+});
 
 client.on("ready", async (u) => {
 	log.ready(`Logged in as ${u.user.tag}`);
@@ -123,13 +130,13 @@ client.on("interactionCreate", async (interaction) => {
 	}
 
 	if (interaction.commandName === "play") {
-		const node = shoukaku.options.nodeResolver(shoukaku.nodes);
-		const result = await node.rest.resolve(focusedValue);
+		const node = tsumi.getIdealNode();
+		const result = await node.loadTracks(focusedValue);
 
 		switch (result.loadType) {
 			case "empty": {
 				try {
-					const searchResult = await node.rest.resolve(`ytsearch:${focusedValue}`);
+					const searchResult = await node.loadTracks(`ytsearch:${focusedValue}`);
 
 					if (!searchResult?.data.length) return;
 
@@ -211,7 +218,7 @@ client.on("interactionCreate", async (interaction) => {
 		}
 
 		if (!queue[guildId]) queue.add(guildId);
-		if (!queue[guildId].node) queue[guildId].node = shoukaku.options.nodeResolver(shoukaku.nodes);
+		if (!queue[guildId].node) queue[guildId].node = tsumi.getIdealNode();
 		const query = interaction.options.getString("query");
 		const replay = interaction.options.getBoolean("autoreplay");
 
@@ -235,10 +242,9 @@ client.on("interactionCreate", async (interaction) => {
 
 		// Join channel first or after stop command
 		if (!queue[guildId].voiceChannel && !query && queue[guildId].isEmpty()) {
-			queue[guildId].player = await shoukaku.joinVoiceChannel({
+			queue[guildId].player = await queue[guildId].node.joinVoiceChannel({
 				guildId,
 				channelId: interaction.member.voice.channelId,
-				shardId: 0,
 			});
 
 			queue[guildId].player.status = "finished";
@@ -261,7 +267,7 @@ client.on("interactionCreate", async (interaction) => {
 		// Join and there is valid query
 		if (!queue[guildId].voiceChannel && query) {
 			try {
-				queue[guildId].player = await shoukaku.joinVoiceChannel({
+				queue[guildId].player = await queue[guildId].node.joinVoiceChannel({
 					guildId,
 					channelId: interaction.member.voice.channelId,
 					shardId: 0,
@@ -299,7 +305,7 @@ client.on("interactionCreate", async (interaction) => {
 		if (queue[guildId].queue.length !== 0 && queue[guildId].player.status === "finished" && !query) {
 			if (!queue[guildId].voiceChannel) {
 				try {
-					queue[guildId].player = await shoukaku.joinVoiceChannel({
+					queue[guildId].player = await queue[guildId].node.joinVoiceChannel({
 						guildId,
 						channelId: interaction.member.voice.channelId,
 						shardId: 0,
@@ -327,10 +333,9 @@ client.on("interactionCreate", async (interaction) => {
 		if (queue[guildId].queue.length !== 0 && queue[guildId].player.status === "finished" && query) {
 			if (!queue[guildId].voiceChannel) {
 				try {
-					queue[guildId].player = await shoukaku.joinVoiceChannel({
+					queue[guildId].player = await queue[guildId].node.joinVoiceChannel({
 						guildId,
 						channelId: interaction.member.voice.channelId,
-						shardId: 0,
 					});
 				} catch (err) {
 					queue[guildId].player = null;
@@ -352,7 +357,7 @@ client.on("interactionCreate", async (interaction) => {
 			return;
 		}
 
-		const result = await queue[guildId].node.rest.resolve(query);
+		const result = await queue[guildId].node.loadTracks(query);
 
 		let res = "";
 		switch (result.loadType) {
@@ -362,7 +367,7 @@ client.on("interactionCreate", async (interaction) => {
 				break;
 			}
 			case "empty": {
-				const searchResult = await queue[guildId].node.rest.resolve(`ytsearch:${query}`);
+				const searchResult = await queue[guildId].node.loadTracks(`ytsearch:${query}`);
 
 				if (!searchResult?.data.length) {
 					await interaction.editReply("Sorry, I could not find any data.");
@@ -455,7 +460,7 @@ client.on("interactionCreate", async (interaction) => {
 			return;
 		}
 
-		await queue[guildId].player.seekTo(position * 1000);
+		await queue[guildId].player.seek(position * 1000);
 
 		await interaction.editReply(`Seeked to ${seek}`);
 	} else if ((command || customId) === "pause") {
@@ -472,7 +477,7 @@ client.on("interactionCreate", async (interaction) => {
 		}
 
 		try {
-			queue[guildId].player.setPaused(true);
+			queue[guildId].player.pause(true);
 
 			await interaction.editReply(`Paused by ${interaction.user}`);
 
@@ -494,7 +499,7 @@ client.on("interactionCreate", async (interaction) => {
 		}
 
 		try {
-			queue[guildId].player.setPaused(false);
+			queue[guildId].player.resume(false);
 
 			await interaction.editReply(`Resumed by ${interaction.user}`);
 
@@ -524,8 +529,10 @@ client.on("interactionCreate", async (interaction) => {
 		queue[guildId].player.position = 0;
 		queue[guildId].index++;
 
-		await queue[guildId].player.playTrack({
-			track: queue[guildId].queue[index].data.encoded,
+		await queue[guildId].player.play({
+			track: {
+				encoded: queue[guildId].queue[index].data.encoded,
+			},
 		});
 
 		await interaction.editReply("Skip");
@@ -553,8 +560,10 @@ client.on("interactionCreate", async (interaction) => {
 		queue[guildId].player.position = 0;
 		queue[guildId].index = queue[guildId].index - 1;
 
-		await queue[guildId].player.playTrack({
-			track: queue[guildId].queue[index].data.encoded,
+		await queue[guildId].player.play({
+			track: {
+				encoded: queue[guildId].queue[index].data.encoded,
+			},
 		});
 
 		await interaction.editReply("Back");
@@ -605,7 +614,7 @@ client.on("interactionCreate", async (interaction) => {
 			} else {
 				const current = queue[guildId].queue[queue[guildId].index].data.info;
 
-				const res = await node.rest.resolve(`ytsearch:${current.author}`);
+				const res = await node.loadTracks(`ytsearch:${current.author}`);
 
 				queue[guildId].add(res.data[0], interaction.user);
 				queue[guildId].add(res.data[1], interaction.user);
@@ -720,7 +729,7 @@ client.on("interactionCreate", async (interaction) => {
 			const before = current + 10;
 
 			if (before < 200) {
-				queue[guildId].player.setGlobalVolume(before);
+				queue[guildId].player.setVolume(before);
 				queue[guildId].volume = before;
 
 				await interaction.editReply(`Set volume to ${before}%`);
@@ -731,7 +740,7 @@ client.on("interactionCreate", async (interaction) => {
 			const before = current - 10;
 
 			if (before > 10) {
-				queue[guildId].player.setGlobalVolume(before);
+				queue[guildId].player.setVolume(before);
 				queue[guildId].volume = before;
 
 				await interaction.editReply(`Set volume to ${before}%`);
@@ -767,7 +776,7 @@ client.on("interactionCreate", async (interaction) => {
 			return;
 		}
 
-		queue[guildId].player.seekTo(after);
+		queue[guildId].player.seek(after);
 
 		await interaction.editReply("Skip 30s");
 	} else if (customId === "30m") {
@@ -798,7 +807,7 @@ client.on("interactionCreate", async (interaction) => {
 			return;
 		}
 
-		queue[guildId].player.seekTo(after);
+		queue[guildId].player.seek(after);
 
 		await interaction.editReply("Back 30s");
 	} else if ((customId || command) === "lyric") {
@@ -833,7 +842,7 @@ client.on("interactionCreate", async (interaction) => {
 		queue[guildId].textChannel = "";
 		queue[guildId].player.status = "finished";
 
-		await shoukaku.leaveVoiceChannel(guildId);
+		await queue[guildId].node.leaveVoiceChannel(guildId);
 
 		await interaction.editReply("Stopped playing");
 	} else if (command === "playlist") {
@@ -911,8 +920,10 @@ client.on("interactionCreate", async (interaction) => {
 		const index = queue[guildId].index;
 		queue[guildId].suppressEnd = true;
 
-		await queue[guildId].player.playTrack({
-			track: queue[guildId].queue[index].data.encoded,
+		await queue[guildId].player.play({
+			track: {
+				encoded: queue[guildId].queue[index].data.encoded,
+			},
 		});
 
 		await interaction.editReply({
@@ -992,15 +1003,17 @@ client.on("interactionCreate", async (interaction) => {
 async function startPlay(guildId) {
 	queue[guildId].index = 0;
 	const index = queue[guildId].index;
-	await queue[guildId].player.playTrack({
-		track: queue[guildId].queue[index].data.encoded,
+	await queue[guildId].player.play({
+		track: {
+			encoded: queue[guildId].queue[index].data.encoded,
+		},
 	});
 }
 
 function addEventListenerToPlayer(guildId) {
-	queue[guildId].player.on("start", async () => {
+	queue[guildId].player.on("start", async (data) => {
 		queue[guildId].player.status = "playing";
-		queue[guildId].player.setGlobalVolume(queue[guildId].volume);
+		queue[guildId].player.setVolume(queue[guildId].volume);
 		queue[guildId].suppressEnd = false;
 		queue[guildId].player.position = 0;
 		const embed = embeds.generateStartEmbed(queue, guildId, 0);
@@ -1110,14 +1123,16 @@ function addEventListenerToPlayer(guildId) {
 				const previous = queue[guildId].previous;
 				if (previous.data.info.sourceName === "spotify") {
 					const res = await spotifyClient.getRecommendations(previous.data.info.identifier);
-					const track = await queue[guildId].node.rest.resolve(`https://open.spotify.com/intl-ja/track/${res}`);
+					const track = await queue[guildId].node.loadTracks(`https://open.spotify.com/intl-ja/track/${res}`);
 					queue[guildId].add(track.data, "Auto Recommendation");
 					queue[guildId].index++;
-					await queue[guildId].player.playTrack({
-						track: queue[guildId].queue[index].data.encoded,
+					await queue[guildId].player.play({
+						track: {
+							encoded: queue[guildId].queue[index].data.encoded,
+						},
 					});
 				} else {
-					const searchResult = await queue[guildId].node.rest.resolve(`ytsearch:${previous.data.info.author}`);
+					const searchResult = await queue[guildId].node.loadTracks(`ytsearch:${previous.data.info.author}`);
 					if (!searchResult?.data.length) {
 						await queue[guildId].textChannel.send("Finished playing queue. I was not able to find any recommendation for you.");
 						return;
@@ -1125,8 +1140,10 @@ function addEventListenerToPlayer(guildId) {
 					res = searchResult.data.shift();
 					queue[guildId].add(res, "Auto Recommendation");
 					queue[guildId].index++;
-					await queue[guildId].player.playTrack({
-						track: queue[guildId].queue[index].data.encoded,
+					await queue[guildId].player.play({
+						track: {
+							encoded: queue[guildId].queue[index].data.encoded,
+						},
 					});
 				}
 			} else {
@@ -1135,8 +1152,10 @@ function addEventListenerToPlayer(guildId) {
 			}
 		} else {
 			queue[guildId].index++;
-			await queue[guildId].player.playTrack({
-				track: queue[guildId].queue[index].data.encoded,
+			await queue[guildId].player.play({
+				track: {
+					encoded: queue[guildId].queue[index].data.encoded,
+				},
 			});
 			return;
 		}
@@ -1219,9 +1238,9 @@ async function hasValidVC(interaction) {
 	return true;
 }
 
-shoukaku.on("error", (_, error) => log.error(error));
+tsumi.on("error", (_, error) => log.error(error));
 
-shoukaku.on("ready", async (_data) => {
+tsumi.on("ready", async (_data) => {
 	log.ready(`Ready to accept commands. Boot took ${(new Date() - start) / 1000}s`);
 
 	console.log(fs.readFileSync("./assets/logo.txt").toString());

@@ -11,7 +11,7 @@
 		"genius-lyrics": "^4.4.7",
 		"helmet": "^7.1.0",
 		"socket.io": "^4.7.5",
-		"tsumi": "github:Fyphen1223/TsumiLink",
+		"tsumi": "^0.0.13",
 		"undici": "^6.13.0"
 	}
 }

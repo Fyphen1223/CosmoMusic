@@ -39,8 +39,8 @@ dependencies:
     specifier: ^4.7.5
     version: 4.7.5
   tsumi:
-    specifier: github:Fyphen1223/TsumiLink
-    version: github.com/Fyphen1223/TsumiLink/5d070ce1bf407ac201cbad72e55b55f884445d8d
+    specifier: ^0.0.13
+    version: 0.0.13
   undici:
     specifier: ^6.13.0
     version: 6.13.0
@@ -940,6 +940,17 @@ packages:
     resolution: {integrity: sha512-AEYxH93jGFPn/a2iVAwW87VuUIkR1FVUKB77NwMF7nBTDkDrrT/Hpt/IrCJ0QXhW27jTBDcf5ZY7w6RiqTMw2Q==}
     dev: false
 
+  /tsumi@0.0.13:
+    resolution: {integrity: sha512-oxORiUJfEDeJh6dGf7oeGwOvWK5hVxWtYy/q/iQ6gh2dlLLV9CVOXadzbmNXM+mWQ52tvZpR1iI+9ZhbeKTF5A==}
+    dependencies:
+      axios: 1.6.8
+      ws: 8.16.0
+    transitivePeerDependencies:
+      - bufferutil
+      - debug
+      - utf-8-validate
+    dev: false
+
   /type-is@1.6.18:
     resolution: {integrity: sha512-TkRKr9sUTxEH8MdfuCSP7VizJyzRNMjj2J2do2Jr3Kym598JVdEksuzPQCnlFPW4ky9Q+iA+ma9BGm06XQBy8g==}
     engines: {node: '>= 0.6'}
@@ -1023,17 +1034,4 @@ packages:
         optional: true
       utf-8-validate:
         optional: true
-    dev: false
-
-  github.com/Fyphen1223/TsumiLink/5d070ce1bf407ac201cbad72e55b55f884445d8d:
-    resolution: {tarball: https://codeload.github.com/Fyphen1223/TsumiLink/tar.gz/5d070ce1bf407ac201cbad72e55b55f884445d8d}
-    name: tsumi
-    version: 0.0.12
-    dependencies:
-      axios: 1.6.8
-      ws: 8.16.0
-    transitivePeerDependencies:
-      - bufferutil
-      - debug
-      - utf-8-validate
     dev: false
