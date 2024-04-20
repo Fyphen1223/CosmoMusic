@@ -47,12 +47,23 @@ const spotifyClient = new spotifyApiClient({
 
 const gptQueue = new gpts();
 
+const queue = new util.queue();
+const log = new util.logger();
+
 const tsumi = new TsumiInstance({
 	botId: config.bot.applicationId,
 	sendPayload: (guildId, payload) => {
 		client.guilds.cache.get(guildId).shard.send(payload);
 	},
 	userAgent: "Tsumi/0.0.2", //userAgent can be anything, but should be in this format: CLIENTNAME/VERSION
+});
+
+tsumi.on("error", (_, error) => log.error(error));
+
+tsumi.on("ready", async (_data) => {
+	log.ready(`Ready to accept commands. Boot took ${(new Date() - start) / 1000}s`);
+
+	console.log(fs.readFileSync("./assets/logo.txt").toString());
 });
 
 tsumi.addNode({
@@ -62,9 +73,6 @@ tsumi.addNode({
 	pass: config.lavalink[0].auth,
 	port: config.lavalink[0].port,
 });
-
-const queue = new util.queue();
-const log = new util.logger();
 
 if (config.config.dashboard.boot) server.startServer(true);
 
@@ -1237,14 +1245,6 @@ async function hasValidVC(interaction) {
 
 	return true;
 }
-
-tsumi.on("error", (_, error) => log.error(error));
-
-tsumi.on("ready", async (_data) => {
-	log.ready(`Ready to accept commands. Boot took ${(new Date() - start) / 1000}s`);
-
-	console.log(fs.readFileSync("./assets/logo.txt").toString());
-});
 
 process.on("uncaughtException", (err) => {
 	log.error(err.stack);

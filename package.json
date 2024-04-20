@@ -11,7 +11,7 @@
 		"genius-lyrics": "^4.4.7",
 		"helmet": "^7.1.0",
 		"socket.io": "^4.7.5",
-		"tsumi": "^0.0.13",
+		"tsumi": "^0.0.15",
 		"undici": "^6.13.0"
 	}
 }
