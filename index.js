@@ -992,7 +992,6 @@ client.on("interactionCreate", async (interaction) => {
 async function startPlay(guildId) {
 	queue[guildId].index = 0;
 	const index = queue[guildId].index;
-	console.log(queue[guildId].queue[index].data.encoded);
 	await queue[guildId].player.playTrack({
 		track: queue[guildId].queue[index].data.encoded,
 	});

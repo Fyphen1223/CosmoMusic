@@ -1030,6 +1030,7 @@ packages:
     name: shoukaku
     version: 4.0.1
     engines: {node: '>=18.0.0', npm: '>=7.0.0'}
+    prepare: true
     requiresBuild: true
     dependencies:
       ws: 8.16.0
