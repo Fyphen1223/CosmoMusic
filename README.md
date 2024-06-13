@@ -1,3 +1,6 @@
+# IMPORTANT NOTE
+This repository is no longer maintained and updated. I strongly recommend you to use [Swallow](https://github.com/Fyphen1223/Swallow) instead.
+
 # WARNING, PLEASE READ HERE
 Many issues like [this](https://github.com/lavalink-devs/Lavalink/issues/1030) are reporting unexpected playing error with LavaLink.
 Since this bot hardly depends on LavaLink, under some situation, this bot will not work properly as it intended to.
